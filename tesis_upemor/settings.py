@@ -75,15 +75,12 @@ WSGI_APPLICATION = 'tesis_upemor.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'Estadia',        # Reemplaza con el nombre de tu base de datos
-        'USER': 'root',             # Reemplaza con tu usuario de MySQL
-        'PASSWORD': '',      # Reemplaza con tu contraseña de MySQL
-        'HOST': '127.0.0.1',
-        'PORT': '3306',                   # Puerto por defecto de MySQL
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        }
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'Estadia',        # Nombre de la base de datos que acabas de crear
+        'USER': 'imanolcier',    # Por defecto, 'tu_nombre_de_usuario_mac'
+        'PASSWORD': '',                   # Deja esto en blanco o con tu contraseña
+        'HOST': 'localhost',
+        'PORT': '5432',                   # Puerto por defecto de PostgreSQL
     }
 }
 
