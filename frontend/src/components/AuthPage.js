@@ -1,5 +1,6 @@
 // frontend/src/components/AuthPage.js
 import React, { useState } from 'react';
+import logo from '../assets/logo.jpg';
 import './AuthPage.css';
 
 const API_BASE_URL = 'http://localhost:8000/api';
@@ -52,7 +53,7 @@ function AuthPage() {
     return (
         <div className="auth-container">
             <div className="auth-box">
-                <img src="/UpeApp_Logo.png" alt="UpeApp Logo" className="logo" />
+                <img src={logo} alt="Logo" className="logo" />
                 <h1>Bienvenido a UpeApp</h1>
                 <p>Ingresa tus datos para {isRegistering ? 'registrarte' : 'iniciar sesión'}</p>
 
