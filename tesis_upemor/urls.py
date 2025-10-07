@@ -19,7 +19,7 @@ from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('core.urls')),  # Includes all URLs from the 'core' app under the '/api/' path
-    re_path(r'^.*$', TemplateView.as_view(template_name='index.html')), # Catches all other requests and serves the React app
+    path('admin/', admin.site.urls),  # Asegúrate de que esta línea esté primero
+    path('api/', include('core.urls')),
+    re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
 ]
