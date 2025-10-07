@@ -1,11 +1,15 @@
 // frontend/src/components/AuthPage.js
 import React, { useState } from 'react';
 import logo from '../assets/logo.jpg';
+import { useNavigate } from 'react-router-dom'; // <--- 1. Importar useNavigate
 import './AuthPage.css';
 
 const API_BASE_URL = 'http://localhost:8000/api';
 
 function AuthPage() {
+    // 2. Inicializar el hook dentro del componente
+    const navigate = useNavigate(); 
+    
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState(''); // Estado para el nombre de usuario
@@ -41,16 +45,21 @@ function AuthPage() {
             
             if (response.ok) {
                 alert(data.message);
+                // 3. Usar navigate() para redirigir al usuario
+                // Redirige al dashboard después de un registro o login exitoso
+                navigate('/dashboard'); 
             } else {
                 alert(data.error);
             }
         } catch (error) {
             console.error('Error:', error);
+            // El error de conexión al servidor debe ser manejado aquí
             alert('Hubo un error al conectar con el servidor.');
         }
     };
 
     return (
+        // ... (el resto de tu componente JSX)
         <div className="auth-container">
             <div className="auth-box">
                 <img src={logo} alt="Logo" className="logo" />
@@ -108,5 +117,6 @@ function AuthPage() {
         </div>
     );
 }
+
 
 export default AuthPage;
