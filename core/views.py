@@ -7,7 +7,7 @@ import json
 @csrf_exempt
 def register_user(request):
     """
-    Handles user registration.
+    Handles user registration and automatically assigns the 'Estudiante' role.
     """
     if request.method == 'POST':
         try:
@@ -18,21 +18,22 @@ def register_user(request):
             nom_user = data.get('nom_user')
             ape_pat_user = data.get('ape_pat_user')
             ape_mat_user = data.get('ape_mat_user', '')
-
+            
             # Basic validation
             if not all([email, password, username, nom_user, ape_pat_user]):
                 return JsonResponse({'error': 'Todos los campos obligatorios deben ser proporcionados.'}, status=400)
 
-            # Create the user using the custom manager
+            # Automatically set the user type to 'Estudiante'
             user = Usuario.objects.create_user(
                 CorreoUser=email,
                 UserName=username,
                 NomUser=nom_user,
                 ApePatUser=ape_pat_user,
                 ApeMatUser=ape_mat_user,
-                password=password
+                password=password,
+                TipoUser='Estudiante'  # This is the key change
             )
-
+            
             return JsonResponse({'message': 'Usuario registrado exitosamente.'}, status=201)
 
         except json.JSONDecodeError:
