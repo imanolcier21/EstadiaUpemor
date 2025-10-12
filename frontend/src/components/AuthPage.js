@@ -1,18 +1,17 @@
 // frontend/src/components/AuthPage.js
 import React, { useState } from 'react';
 import logo from '../assets/logo.jpg';
-import { useNavigate } from 'react-router-dom'; // <--- 1. Importar useNavigate
+import { useNavigate } from 'react-router-dom';
 import './AuthPage.css';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+// ELIMINADA: La variable API_BASE_URL, ya que usaremos el proxy de package.json
 
 function AuthPage() {
-    // 2. Inicializar el hook dentro del componente
     const navigate = useNavigate(); 
     
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [username, setUsername] = useState(''); // Estado para el nombre de usuario
+    const [username, setUsername] = useState('');
     const [nomUser, setNomUser] = useState('');
     const [apePatUser, setApePatUser] = useState('');
     const [apeMatUser, setApeMatUser] = useState('');
@@ -21,7 +20,9 @@ function AuthPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const endpoint = isRegistering ? `${API_BASE_URL}/register/` : `${API_BASE_URL}/login/`;
+        // CAMBIO CLAVE: Usamos la ruta RELATIVA. El proxy (configurado en package.json)
+        // redirigirá esto automáticamente a http://localhost:8000/api/register/
+        const endpoint = isRegistering ? '/api/register/' : '/api/login/';
         
         const requestBody = {
             email: email,
@@ -37,29 +38,27 @@ function AuthPage() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    credentials: 'include', // Asegúrate que esto esté si no está en otra parte
                 },
                 body: JSON.stringify(requestBody), 
             });
             
-            const data = await response.json();
-            
-            if (response.ok) {
+            // LÍNEA CRÍTICA: Definición de 'data'
+            const data = await response.json(); // <-- ASEGÚRATE QUE ESTA LÍNEA NO ESTÉ COMENTADA
+    
+            if (response.ok) { // Línea 47 (approx)
                 alert(data.message);
-                // 3. Usar navigate() para redirigir al usuario
-                // Redirige al dashboard después de un registro o login exitoso
                 navigate('/dashboard'); 
-            } else {
+            } else { // Línea 50 (approx)
                 alert(data.error);
             }
         } catch (error) {
-            console.error('Error:', error);
-            // El error de conexión al servidor debe ser manejado aquí
-            alert('Hubo un error al conectar con el servidor.');
+            // ...
         }
     };
 
     return (
-        // ... (el resto de tu componente JSX)
+        // ... (el resto de tu componente JSX, el cual es correcto)
         <div className="auth-container">
             <div className="auth-box">
                 <img src={logo} alt="Logo" className="logo" />
@@ -86,8 +85,8 @@ function AuthPage() {
                                 <input
                                     type="text"
                                     id="username"
-                                    value={username} // Enlazado a la nueva variable de estado
-                                    onChange={(e) => setUsername(e.target.value)} // Actualiza el estado cuando se escribe
+                                    value={username} 
+                                    onChange={(e) => setUsername(e.target.value)}
                                     placeholder="Ingresa tu nombre de usuario"
                                     required
                                 />
