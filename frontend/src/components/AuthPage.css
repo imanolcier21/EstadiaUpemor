@@ -114,3 +114,24 @@ body {
     cursor: pointer;
     margin-top: 20px;
 }
+
+.alert-box{
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-align: center;
+    border: 1px solid transparent;
+}
+
+.alert-box.success{
+    background-color: rgba(61, 223, 193, 0.2);
+    color: var(--dark-green);
+    border-color: var(--teal-mint);
+}
+
+.alert-box.error{
+    background-color: rgba(224, 163, 50, 0.2);
+    color: #a04000;
+    border-color: var(--amber);
+}
