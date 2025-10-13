@@ -4,11 +4,11 @@ import logo from '../assets/logo.jpg';
 import { useNavigate } from 'react-router-dom';
 import './AuthPage.css';
 
-// ELIMINADA: La variable API_BASE_URL, ya que usaremos el proxy de package.json
 
 function AuthPage() {
     const navigate = useNavigate(); 
-    
+
+    const [message, setMessage] = useState({text: '', type: ''});
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
@@ -38,33 +38,47 @@ function AuthPage() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    credentials: 'include', // Asegúrate que esto esté si no está en otra parte
+                    credentials: 'include', 
                 },
                 body: JSON.stringify(requestBody), 
             });
             
-            // LÍNEA CRÍTICA: Definición de 'data'
-            const data = await response.json(); // <-- ASEGÚRATE QUE ESTA LÍNEA NO ESTÉ COMENTADA
+            
+            const data = await response.json(); 
     
-            if (response.ok) { // Línea 47 (approx)
-                alert(data.message);
-                navigate('/dashboard'); 
-            } else { // Línea 50 (approx)
-                alert(data.error);
+            if (response.ok) { 
+                const {message, TipoUser, is_superuser} = data;
+
+                setMessage({text: data.message, type: 'success'});
+                setEmail('');
+                setPassword('');
+
+                let redirectPath = '/dashboard/estudiante';
+                if (TipoUser === 'Admin' || is_superuser) {
+                    redirectPath = '/dashboard/admin';
+                }
+                
+                setTimeout(() => navigate(redirectPath), 1000);
+            } else { 
+                setMessage({text: data.error, type: 'error'});
             }
         } catch (error) {
-            // ...
+            setMessage({text: 'Error al conectar con el servidor', type: 'error'}); 
         }
     };
 
     return (
-        // ... (el resto de tu componente JSX, el cual es correcto)
+        
         <div className="auth-container">
             <div className="auth-box">
+                {message.text && ( 
+                    <div className={ `alert-box ${message.type}` }>
+                        {message.text}
+                    </div>
+                )}
                 <img src={logo} alt="Logo" className="logo" />
                 <h1>Bienvenido a UpeApp</h1>
                 <p>Ingresa tus datos para {isRegistering ? 'registrarte' : 'iniciar sesión'}</p>
-
                 <form onSubmit={handleSubmit}>
                     {isRegistering && (
                         <>
