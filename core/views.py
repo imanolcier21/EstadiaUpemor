@@ -68,8 +68,8 @@ def login_user(request):
                 login(request, user)
                 return JsonResponse({
                     'message': 'Inicio de sesión exitoso.',
-                    'username': user.UserName,
-                    'email': user.CorreoUser
+                    'TipoUser': user.TipoUser,
+                    'is_superuser': user.is_superuser
                 })
             else:
                 return JsonResponse({'error': 'Credenciales de inicio de sesión inválidas.'}, status=400)
