@@ -47,15 +47,20 @@ function AuthPage() {
             const data = await response.json(); 
     
             if (response.ok) { 
-                const {message, TipoUser, is_superuser} = data;
+                const {message, TipoUser, is_superuser, is_profile_complete} = data;
 
                 setMessage({text: data.message, type: 'success'});
                 setEmail('');
                 setPassword('');
 
-                let redirectPath = '/dashboard/estudiante';
-                if (TipoUser === 'Admin' || is_superuser) {
+                let redirectPath;
+
+                if (TipoUser === 'Estudiante' && !is_profile_complete) {
+                    redirectPath = 'onboarding/estudiante';
+                }else if (TipoUser === 'Admin' || is_superuser) {
                     redirectPath = '/dashboard/admin';
+                }else {
+                    redirectPath = '/dashboard/estudiante';
                 }
                 
                 setTimeout(() => navigate(redirectPath), 1000);
