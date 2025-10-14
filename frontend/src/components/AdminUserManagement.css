@@ -1,0 +1,216 @@
+/* frontend/src/components/AdminUserManagement.css */
+
+/* --- Variables Globales (Asegúrate de que tus colores sean accesibles) --- */
+:root {
+    --dark-green: #0B3D2E;
+    --teal-mint: #3EDFC1;
+    --amber: #F4A332;
+    --light-gray: #f4f4f4;
+    --font-heading: 'Heading Text Slab', serif; 
+    --font-body: 'Inter', sans-serif;
+}
+
+/* --- Layout Principal --- */
+.admin-management-container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 40px auto;
+    font-family: var(--font-body);
+}
+
+.admin-management-container h1 {
+    font-family: var(--font-heading);
+    color: var(--dark-green);
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.admin-management-container .subtitle {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+/* --- Sección de Formulario de Creación/Edición (Botón) --- */
+.create-user-section h2 {
+    color: var(--dark-green);
+    font-size: 24px;
+    margin-top: 40px;
+    margin-bottom: 15px;
+}
+
+/* El botón principal de "Abrir Formulario" (Usando color Teal-Mint) */
+.primary-button {
+    background-color: var(--teal-mint);
+    color: var(--dark-green);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: auto; /* Ajuste para el botón de abrir formulario */
+}
+
+.primary-button:hover {
+    background-color: #30b196; 
+}
+
+/* --- Diseño de la Tabla (READ) --- */
+.user-list-section h2 {
+    color: var(--dark-green);
+    font-size: 24px;
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--white);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.user-table th {
+    background-color: var(--dark-green);
+    color: var(--white);
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 700;
+}
+
+.user-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--light-gray);
+    vertical-align: middle;
+}
+
+.user-table tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+/* --- Botones de Acción de la Tabla --- */
+.edit-button, .delete-button {
+    border: 1px solid;
+    padding: 6px 12px;
+    margin-right: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.edit-button {
+    background-color: var(--amber);
+    border-color: var(--amber);
+    color: var(--dark-green);
+}
+
+.edit-button:hover {
+    opacity: 0.9;
+}
+
+.delete-button {
+    background-color: transparent;
+    border-color: #d9534f;
+    color: #d9534f;
+}
+
+.delete-button:hover {
+    background-color: #d9534f;
+    color: var(--white);
+}
+
+/* --- Estilos para los Formularios (UserCreationForm/UserEditForm) --- */
+.creation-form, .modal-content {
+    background-color: var(--light-gray);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    display: grid;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.creation-form input, .creation-form select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.creation-form button[type="submit"] {
+    background-color: var(--teal-mint);
+    color: var(--dark-green);
+    font-weight: 700;
+}
+
+.user-table th, .user-table td {
+    display: table-cell; /* Asegura vista de tabla por defecto */
+    text-align: left;
+    width: auto;
+    /* Remover los estilos de móvil si existían en el base */
+}
+
+.user-table thead {
+    display: table-header-group;
+}
+
+.user-table td::before {
+    content: none;
+}
+
+.user-table tbody tr {
+    display: table-row;
+    margin-bottom: 0;
+    border: none;
+}
+
+/* ----------------------------------------------------- */
+/* --- MEDIA QUERY: VISTA MÓVIL (MAX-WIDTH: 768PX) --- */
+/* Esta sección activa la vista de "Tarjetas Apiladas" para móviles */
+/* ----------------------------------------------------- */
+@media (max-width: 768px) {
+    /* 1. Ocultar el encabezado de la tabla */
+    .user-table thead {
+        display: none;
+    }
+
+    /* 2. Hacer que cada fila de datos parezca una tarjeta */
+    .user-table tbody tr {
+        margin-bottom: 15px;
+        display: block;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    /* 3. Colapsar celdas en filas verticales */
+    .user-table th, .user-table td {
+        display: block; /* La celda ocupa todo el ancho */
+        width: 100%;
+        text-align: right;
+        padding: 10px 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .user-table td {
+        position: relative;
+        padding-left: 50%; /* Espacio para la etiqueta */
+        text-align: right; /* Alinea el valor a la derecha */
+    }
+
+    /* 4. Mostrar la etiqueta (data-label) como el título de la 'tarjeta' */
+    .user-table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 15px;
+        width: 45%;
+        text-align: left;
+        font-weight: bold;
+        color: var(--dark-green);
+    }
+    
+    /* Asegura que la última celda de la fila no tenga borde inferior */
+    .user-table tbody tr td:last-child {
+        border-bottom: none;
+    }
+}
