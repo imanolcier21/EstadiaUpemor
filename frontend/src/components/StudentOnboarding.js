@@ -57,6 +57,14 @@ function StudentOnboarding() {
         setLoading(true);
         setMessage({ text: 'Guardando perfil...', type: '' });
 
+
+        const csrftoken = document.cookie.split(';').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+        if (!csrftoken){
+            setMessage({ text: 'Error al obtener el token CSRF. Intente de nuevo.', type: 'error' });
+            setLoading(false);
+            return;
+        }
+
         // FormData es NECESARIO para enviar archivos (foto_perfil)
         const dataToSend = new FormData();
         dataToSend.append('carrera_id', formData.carrera_id);
@@ -70,6 +78,9 @@ function StudentOnboarding() {
                 method: 'POST', 
                 // NO se debe establecer Content-Type para FormData
                 credentials: 'include',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                },
                 body: dataToSend,
             });
 
