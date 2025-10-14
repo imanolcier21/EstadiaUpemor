@@ -63,6 +63,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     last_login = models.DateTimeField(null=True, blank=True)
     FechUnido = models.DateTimeField(auto_now_add=True)
     PrivacidadUser = models.CharField(max_length=10, choices=PRIVACIDAD_CHOICES, default='Publico')
+    is_profile_complete = models.BooleanField(default=False)
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
