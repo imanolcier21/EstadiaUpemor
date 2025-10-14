@@ -1,8 +1,10 @@
 // frontend/src/components/AdminUserManagement.js
 import React, { useState, useEffect, useCallback } from 'react';
 import UserCreationForm from './UserCreationForm'; 
-import UserEditForm from './UserEditForm'; // Importado para el formulario de edición
+import UserEditForm from './UserEditForm'; 
+import ConfirmModal from './ConfirmModal'; // Importado para el modal de confirmación
 import '../App.css'; 
+import './AdminUserManagement.css'; // Para el diseño de la tabla y botones
 
 // La URL base es manejada por el proxy en package.json.
 
@@ -11,11 +13,14 @@ function AdminUserManagement() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     
-    // Controla si se muestra el modal o sección de formulario
+    // Controla si se muestra el modal o sección de formulario (Creación o Edición)
     const [isFormVisible, setIsFormVisible] = useState(false); 
     
     // Almacena el objeto del usuario a editar (null para creación)
     const [editingUser, setEditingUser] = useState(null); 
+
+    // Controla si se muestra el modal de confirmación, guarda el objeto a eliminar
+    const [confirmingUser, setConfirmingUser] = useState(null);
 
     // --- LÓGICA DE LECTURA (READ) ---
     const fetchUsers = useCallback(async () => {
@@ -47,12 +52,21 @@ function AdminUserManagement() {
         fetchUsers();
     }, [fetchUsers]); 
 
-    
+
     // --- LÓGICA DE ELIMINACIÓN (DELETE) ---
-    const handleDelete = async (userId, userName) => {
-        if (!window.confirm(`¿Estás seguro de que quieres eliminar al usuario ${userName} (ID: ${userId})? Esta acción es irreversible.`)) {
-            return;
-        }
+
+    // Función que se llama desde el botón (guarda el usuario para abrir el modal)
+    const handleDeleteClick = (user) => {
+        setConfirmingUser(user);
+    };
+
+    // Función que ejecuta el fetch DELETE (llamada por el modal al confirmar)
+    const executeDelete = async () => {
+        const userId = confirmingUser.idUser;
+        const userName = confirmingUser.UserName;
+        
+        // Cerrar el modal antes de ejecutar la petición
+        setConfirmingUser(null); 
 
         try {
             const response = await fetch(`/api/usuarios/${userId}/`, {
@@ -60,21 +74,22 @@ function AdminUserManagement() {
                 headers: {
                     'X-CSRFToken': document.cookie.split('; ').find(row => row.startsWith('csrftoken=')).split('=')[1],
                     'Content-Type': 'application/json',
-                    credentials: 'include',
                 },
+                credentials: 'include',
             });
 
             if (response.status === 204) { 
-                alert(`Usuario ${userName} eliminado con éxito.`);
+                // Usar alert temporalmente como notificación de éxito de plataforma
+                alert(`[Notificación de Plataforma]: Usuario ${userName} eliminado con éxito.`); 
                 fetchUsers(); // Recarga la lista
             } else if (response.status === 403 || response.status === 401) {
-                alert('Error: Permiso denegado para eliminar usuarios.');
+                alert('[Notificación de Plataforma]: Error: Permiso denegado para eliminar.');
             } else {
-                alert(`Error al eliminar usuario: Código ${response.status}.`);
+                alert(`[Notificación de Plataforma]: Error al eliminar usuario. Código ${response.status}.`);
             }
 
         } catch (error) {
-            alert('Error de red al intentar eliminar el usuario.');
+            alert('[Notificación de Plataforma]: Error de red al intentar eliminar el usuario.');
         }
     };
     
@@ -83,14 +98,14 @@ function AdminUserManagement() {
     
     // Función para abrir el formulario de CREACIÓN
     const handleOpenCreateForm = () => {
-        setEditingUser(null); // Asegura que el modo sea 'Creación'
+        setEditingUser(null); // Modo: Creación
         setIsFormVisible(true);
     };
 
     // Función para abrir el formulario de EDICIÓN
     const handleEdit = (user) => {
-        setEditingUser(user); // Carga los datos del usuario
-        setIsFormVisible(true); // Muestra el formulario
+        setEditingUser(user); // Modo: Edición, carga los datos
+        setIsFormVisible(true); 
     };
 
     // Función para cerrar el formulario y recargar datos (Usado por ambos formularios)
@@ -106,6 +121,16 @@ function AdminUserManagement() {
 
     return (
         <div className="admin-management-container">
+            
+            {/* 1. RENDERIZADO DEL MODAL DE CONFIRMACIÓN */}
+            {confirmingUser && (
+                <ConfirmModal
+                    message={`¿Estás seguro de que quieres eliminar a ${confirmingUser.UserName} (ID: ${confirmingUser.idUser})? Esta acción es irreversible.`}
+                    onConfirm={executeDelete}
+                    onCancel={() => setConfirmingUser(null)} // Cierra el modal
+                />
+            )}
+
             <h1>Gestión de Usuarios (Admin)</h1>
             <p className="subtitle">Módulo 2: CRUD de Usuarios de la Plataforma.</p>
             
@@ -113,26 +138,25 @@ function AdminUserManagement() {
                 <h2>Crear Nuevo Usuario/Admin</h2>
                 <button 
                     className="primary-button"
-                    // Al hacer clic en este botón, siempre se abre el modo "Creación"
                     onClick={handleOpenCreateForm}
                     style={{ marginBottom: '20px' }}
                 >
                     {isFormVisible && !editingUser ? 'Cerrar Formulario' : 'Abrir Formulario de Creación'}
                 </button>
+                
+                {/* RENDERIZADO CONDICIONAL DE FORMULARIO DE CREACIÓN/EDICIÓN */}
+                {isFormVisible && (
+                    <div className="form-modal-section"> 
+                        {editingUser ? (
+                            // Muestra Edición si hay un usuario cargado
+                            <UserEditForm user={editingUser} onClose={handleCloseForm} />
+                        ) : (
+                            // Muestra Creación si no hay usuario cargado
+                            <UserCreationForm onUserCreated={handleCloseForm} />
+                        )}
+                    </div>
+                )}
             </section>
-            
-            {/* RENDERIZADO CONDICIONAL DE FORMULARIO */}
-            {isFormVisible && (
-                <div className="form-modal-section"> 
-                    {/* Si editingUser tiene datos, renderiza el Formulario de Edición */}
-                    {editingUser ? (
-                        <UserEditForm user={editingUser} onClose={handleCloseForm} />
-                    ) : (
-                        // Si editingUser es null, renderiza el Formulario de Creación
-                        <UserCreationForm onUserCreated={handleCloseForm} />
-                    )}
-                </div>
-            )}
             
             <hr />
 
@@ -153,24 +177,24 @@ function AdminUserManagement() {
                     <tbody>
                         {users.map((user) => (
                             <tr key={user.idUser}>
-                                <td>{user.idUser}</td>
-                                <td>{user.UserName}</td>
-                                <td>{user.CorreoUser}</td>
-                                <td>{user.TipoUser}</td>
-                                <td>{user.idCarrera || 'Sin Asignar'}</td>
-                                <td>
+                                <td data-label="ID">{user.idUser}</td>
+                                <td data-label="Nombre de Usuario">{user.UserName}</td>
+                                <td data-label="Correo Electrónico">{user.CorreoUser}</td>
+                                <td data-label="Tipo">{user.TipoUser}</td>
+                                <td data-label="Carrera">{user.idCarrera || 'Sin Asignar'}</td>
+                                <td data-label="Acciones">
                                     {/* Botón de EDICIÓN */}
                                     <button 
                                         className="edit-button"
-                                        onClick={() => handleEdit(user)} // <-- Llama al modo edición
+                                        onClick={() => handleEdit(user)}
                                     >
                                         Editar
                                     </button>
                                     
-                                    {/* Botón de ELIMINACIÓN */}
+                                    {/* Botón de ELIMINACIÓN (llama a la modal) */}
                                     <button 
                                         className="delete-button"
-                                        onClick={() => handleDelete(user.idUser, user.UserName)}
+                                        onClick={() => handleDeleteClick(user)}
                                     >
                                         Eliminar
                                     </button>
