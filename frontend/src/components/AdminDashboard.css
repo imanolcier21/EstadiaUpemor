@@ -1,0 +1,111 @@
+/* frontend/src/components/AdminDashboard.css */
+
+/* --- Variables Globales (Consistentes con el resto de la app) --- */
+:root {
+    --dark-green: #0B3D2E;
+    --teal-mint: #3EDFC1;
+    --amber: #F4A332;
+    --light-gray: #f4f4f4;
+    --white: #ffffff;
+    --font-heading: 'Heading Text Slab', serif; 
+    --font-body: 'Inter', sans-serif;
+}
+
+/* --- Layout Principal del Dashboard --- */
+.admin-dashboard-container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 30px;
+    font-family: var(--font-body);
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    text-align: center;
+}
+
+.admin-dashboard-container h1 {
+    font-family: var(--font-heading);
+    color: var(--dark-green);
+    font-size: 32px;
+    margin-bottom: 15px;
+}
+
+.admin-dashboard-container p {
+    color: #555;
+    font-size: 18px;
+    margin-bottom: 40px;
+}
+
+/* --- Contenedor para los enlaces de navegación --- */
+.dashboard-nav-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+/* --- Estilo de los Botones de Navegación --- */
+.dashboard-nav-links .nav-button {
+    background-color: var(--teal-mint);
+    color: var(--dark-green);
+    border: none;
+    padding: 15px 30px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none; /* Para quitar el subrayado de los <Link> */
+    display: inline-block;
+}
+
+.dashboard-nav-links .nav-button:hover {
+    background-color: #30b196;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo alternativo si se necesita */
+.dashboard-nav-links .nav-button-secondary {
+    background-color: var(--amber);
+}
+
+.dashboard-nav-links .nav-button-secondary:hover {
+    background-color: #d88e23;
+}
+
+/* --- Media Queries para Responsividad --- */
+
+/* Para Tablets (hasta 768px) */
+@media (max-width: 768px) {
+    .admin-dashboard-container h1 {
+        font-size: 28px; /* Reducir tamaño del título */
+    }
+
+    .admin-dashboard-container p {
+        font-size: 16px; /* Reducir tamaño del párrafo */
+    }
+
+    .dashboard-nav-links .nav-button {
+        padding: 12px 24px; /* Botones ligeramente más pequeños */
+    }
+}
+
+/* Para Móviles (hasta 480px) */
+@media (max-width: 480px) {
+    .admin-dashboard-container {
+        width: 95%;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .admin-dashboard-container h1 {
+        font-size: 24px;
+    }
+
+    .dashboard-nav-links {
+        flex-direction: column; /* Apilar los botones verticalmente */
+        gap: 15px;
+    }
+}
