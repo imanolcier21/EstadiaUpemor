@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Usuario, Carrera
+from .models import Usuario
+from .models import Carrera
 
 class UsuarioSerializer(serializers.ModelSerializer):
     # Campo personalizado para la relación de Carrera (mostrar el nombre, no el ID)
@@ -14,3 +15,9 @@ class UsuarioSerializer(serializers.ModelSerializer):
         ]
         # La contraseña NUNCA debe ser expuesta en el serializador de lectura/listado
         read_only_fields = ('FechUnido',)
+
+class CarreraSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Carrera
+        fields = ['idCarrera', 'NomCarrera']
+        read_only_fields = ('idCarrera',)
