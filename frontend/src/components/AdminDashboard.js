@@ -14,6 +14,9 @@ function AdminDashboard() {
                 <Link to="/admin/users" className="nav-button">
                     Gestión de Usuarios
                 </Link>
+                <Link to="/dashboard/admin/carreras" className="nav-button">
+                    Gestión de Carreras
+                </Link>
                 {/* Próximamente: Más enlaces para Gestión de Carreras, Eventos, etc. */}
             </div>
         </div>
