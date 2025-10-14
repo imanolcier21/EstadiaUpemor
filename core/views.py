@@ -1,13 +1,22 @@
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import Permission
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import Usuario
+from rest_framework.views import APIView
+from rest_framework.decorators import permission_classes, api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Usuario, Carrera
+from .serializers import CarreraSerializer
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .serializers import UsuarioSerializer
 import json
 from rest_framework.decorators import api_view # Necesario para register/login
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAuthenticated
+
 
 # --- VISTAS PÚBLICAS DE AUTENTICACIÓN ---
 
@@ -156,3 +165,35 @@ class UsuarioViewSet(viewsets.ModelViewSet):
             instance.save() 
             
         return Response(serializer.data)
+
+class UserProfileUpdate(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, format=None):
+        user = request.user
+
+        carrera_id = request.data.get('carrera_id')
+        
+
+        try:
+            if carrera_id:
+                user.idCarrera_id = carrera_id
+            
+            user.is_profile_complete = True
+            user.save()
+
+            return Response({'message': 'Perfil actualizado exitosamente'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class CarreraViewSet(viewsets.ModelViewSet):
+    queryset = Carrera.objects.all().order_by('idCarrera')
+    serializer_class = CarreraSerializer
+
+    def get_permissions(self):
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            self.permission_classes = [permissions.IsAdminUser]
+        else:
+            self.permission_classes = [permissions.IsAuthenticated]
+        return [Permission()for Permission in self.permission_classes]
