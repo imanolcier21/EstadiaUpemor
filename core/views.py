@@ -71,7 +71,8 @@ def login_user(request):
                 return JsonResponse({
                     'message': 'Inicio de sesión exitoso.',
                     'TipoUser': user.TipoUser,
-                    'is_superuser': user.is_superuser
+                    'is_superuser': user.is_superuser,
+                    'is_profile_complete': user.is_profile_complete
                 })
             else:
                 return JsonResponse({'error': 'Credenciales de inicio de sesión inválidas.'}, status=400)
