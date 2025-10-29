@@ -3,11 +3,12 @@ import React, { useState } from 'react';
 import logo from '../assets/logo.jpg';
 import { useNavigate } from 'react-router-dom';
 import './AuthPage.css';
+import { useAuth } from '../context/AuthContext';
 
 
 function AuthPage() {
     const navigate = useNavigate(); 
-
+    const { login } = useAuth();
     const [message, setMessage] = useState({text: '', type: ''});
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -44,28 +45,28 @@ function AuthPage() {
             });
             
             
-            const data = await response.json(); 
+            const response_data = await response.json(); 
     
             if (response.ok) { 
-                const {message, TipoUser, is_superuser, is_profile_complete} = data;
+                const {message, TipoUser, is_superuser, is_profile_complete} = response_data;
+                login(response_data);
 
-                setMessage({text: data.message, type: 'success'});
+                setMessage({text: message, type: 'success'});
                 setEmail('');
                 setPassword('');
+                
 
                 let redirectPath;
-
-                if (TipoUser === 'Estudiante' && !is_profile_complete) {
+                if (TipoUser === 'Estudiante' && !is_profile_complete){
                     redirectPath = 'onboarding/estudiante';
                 }else if (TipoUser === 'Admin' || is_superuser) {
                     redirectPath = '/dashboard/admin';
                 }else {
                     redirectPath = '/dashboard/estudiante';
                 }
-                
                 setTimeout(() => navigate(redirectPath), 1000);
             } else { 
-                setMessage({text: data.error, type: 'error'});
+                setMessage({text: response_data.error, type: 'error'});
             }
         } catch (error) {
             setMessage({text: 'Error al conectar con el servidor', type: 'error'}); 
