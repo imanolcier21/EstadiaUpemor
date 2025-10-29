@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+Estadia/
+venv/
+.venv/
+
+# Django stuff:
+db.sqlite3
+*.sqlite3
+*.log
+
+# VSCode/IDE
+.vscode/
+.idea/
+*.swp
+
+# Node modules y build de React
+frontend/node_modules/
+frontend/build/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos PDF y documentos grandes
+*.pdf
+
+# Archivos temporales
+*.tmp
+*.bak
+
+# Otros archivos ocultan información sensible
+env/
+.env
+.env.*
+
+# Otros
+*.orig
