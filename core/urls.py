@@ -13,7 +13,8 @@ urlpatterns = [
     # Rutas para el login/registro público (Estudiantes)
     path('register/', views.register_user, name='register'),
     path('login/', views.login_user, name='login'),
-
+    path('logout/', views.logout_user, name='logout'),
+    path('check_session/', views.check_session, name='check_session'),
     path('profile/onboard/', views.UserProfileUpdate.as_view(), name='user_profile_update'),
     
     # Incluye todas las rutas generadas por el Router (Gestión de Usuarios)
