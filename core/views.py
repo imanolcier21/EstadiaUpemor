@@ -3,7 +3,7 @@ from django.contrib.auth.models import Permission
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
-from rest_framework.decorators import permission_classes, api_view
+from rest_framework.decorators import permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Usuario, Carrera
@@ -16,9 +16,39 @@ import json
 from rest_framework.decorators import api_view # Necesario para register/login
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth import logout as django_logout
 
 
 # --- VISTAS PÚBLICAS DE AUTENTICACIÓN ---
+
+
+
+@csrf_exempt
+@api_view(['GET']) 
+@permission_classes([permissions.IsAuthenticated])
+def check_session(request):
+    """
+    Verifica si la cookie de sesión es válida. Si lo es, retorna los datos del usuario.
+    Requiere que el usuario esté autenticado.
+    """
+    user = request.user
+    return Response({
+        'isAuthenticated': True,
+        'TipoUser': user.TipoUser,
+        'is_superuser': user.is_superuser,
+        'UserName': user.UserName,
+        'is_profile_complete': user.is_profile_complete
+    }, status=status.HTTP_200_OK)
+
+    
+@csrf_exempt
+@api_view(['POST']) 
+def logout_user(request):
+    """Mata la sesión de Django."""
+    if request.user.is_authenticated:
+        django_logout(request)
+        return Response({'message': 'Sesión cerrada exitosamente.'}, status=status.HTTP_200_OK)
+    return Response({'error': 'No hay sesión activa.'}, status=status.HTTP_400_BAD_REQUEST)
 
 @csrf_exempt
 def register_user(request):
