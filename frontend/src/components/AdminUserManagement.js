@@ -3,9 +3,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import UserCreationForm from './UserCreationForm'; 
 import UserEditForm from './UserEditForm'; 
 import ConfirmModal from './ConfirmModal'; // Importado para el modal de confirmación
+import AdminLayout from './AdminLayout';
 import '../App.css'; 
 import './AdminUserManagement.css'; // Para el diseño de la tabla y botones
-
 // La URL base es manejada por el proxy en package.json.
 
 function AdminUserManagement() {
@@ -120,91 +120,93 @@ function AdminUserManagement() {
     if (error) return <div className="error-message">Error al cargar usuarios: {error}</div>;
 
     return (
-        <div className="admin-management-container">
-            
-            {/* 1. RENDERIZADO DEL MODAL DE CONFIRMACIÓN */}
-            {confirmingUser && (
-                <ConfirmModal
-                    message={`¿Estás seguro de que quieres eliminar a ${confirmingUser.UserName} (ID: ${confirmingUser.idUser})? Esta acción es irreversible.`}
-                    onConfirm={executeDelete}
-                    onCancel={() => setConfirmingUser(null)} // Cierra el modal
-                />
-            )}
-
-            <h1>Gestión de Usuarios (Admin)</h1>
-            <p className="subtitle">Módulo 2: CRUD de Usuarios de la Plataforma.</p>
-            
-            <section className="create-user-section">
-                <h2>Crear Nuevo Usuario/Admin</h2>
-                <button 
-                    className="primary-button"
-                    onClick={handleOpenCreateForm}
-                    style={{ marginBottom: '20px' }}
-                >
-                    {isFormVisible && !editingUser ? 'Cerrar Formulario' : 'Abrir Formulario de Creación'}
-                </button>
+       <div className='admin-management-content'>
+            <div className="admin-management-container">
                 
-                {/* RENDERIZADO CONDICIONAL DE FORMULARIO DE CREACIÓN/EDICIÓN */}
-                {isFormVisible && (
-                    <div className="form-modal-section"> 
-                        {editingUser ? (
-                            // Muestra Edición si hay un usuario cargado
-                            <UserEditForm user={editingUser} onClose={handleCloseForm} />
-                        ) : (
-                            // Muestra Creación si no hay usuario cargado
-                            <UserCreationForm onUserCreated={handleCloseForm} />
-                        )}
-                    </div>
+                {/* 1. RENDERIZADO DEL MODAL DE CONFIRMACIÓN */}
+                {confirmingUser && (
+                    <ConfirmModal
+                        message={`¿Estás seguro de que quieres eliminar a ${confirmingUser.UserName} (ID: ${confirmingUser.idUser})? Esta acción es irreversible.`}
+                        onConfirm={executeDelete}
+                        onCancel={() => setConfirmingUser(null)} // Cierra el modal
+                    />
                 )}
-            </section>
-            
-            <hr />
 
-            {/* SECCIÓN DE LECTURA (READ) */}
-            <section className="user-list-section">
-                <h2>Lista de Usuarios Registrados ({users.length})</h2>
-                <table className="user-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre de Usuario</th>
-                            <th>Correo Electrónico</th>
-                            <th>Tipo</th>
-                            <th>Carrera</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {users.map((user) => (
-                            <tr key={user.idUser}>
-                                <td data-label="ID">{user.idUser}</td>
-                                <td data-label="Nombre de Usuario">{user.UserName}</td>
-                                <td data-label="Correo Electrónico">{user.CorreoUser}</td>
-                                <td data-label="Tipo">{user.TipoUser}</td>
-                                <td data-label="Carrera">{user.idCarrera || 'Sin Asignar'}</td>
-                                <td data-label="Acciones">
-                                    {/* Botón de EDICIÓN */}
-                                    <button 
-                                        className="edit-button"
-                                        onClick={() => handleEdit(user)}
-                                    >
-                                        Editar
-                                    </button>
-                                    
-                                    {/* Botón de ELIMINACIÓN (llama a la modal) */}
-                                    <button 
-                                        className="delete-button"
-                                        onClick={() => handleDeleteClick(user)}
-                                    >
-                                        Eliminar
-                                    </button>
-                                </td>
+                <h1>Gestión de Usuarios (Admin)</h1>
+                <p className="subtitle">Módulo 2: CRUD de Usuarios de la Plataforma.</p>
+                
+                <section className="create-user-section">
+                    <h2>Crear Nuevo Usuario/Admin</h2>
+                    <button 
+                        className="primary-button"
+                        onClick={handleOpenCreateForm}
+                        style={{ marginBottom: '20px' }}
+                    >
+                        {isFormVisible && !editingUser ? 'Cerrar Formulario' : 'Abrir Formulario de Creación'}
+                    </button>
+                    
+                    {/* RENDERIZADO CONDICIONAL DE FORMULARIO DE CREACIÓN/EDICIÓN */}
+                    {isFormVisible && (
+                        <div className="form-modal-section"> 
+                            {editingUser ? (
+                                // Muestra Edición si hay un usuario cargado
+                                <UserEditForm user={editingUser} onClose={handleCloseForm} />
+                            ) : (
+                                // Muestra Creación si no hay usuario cargado
+                                <UserCreationForm onUserCreated={handleCloseForm} />
+                            )}
+                        </div>
+                    )}
+                </section>
+                
+                <hr />
+
+                {/* SECCIÓN DE LECTURA (READ) */}
+                <section className="user-list-section">
+                    <h2>Lista de Usuarios Registrados ({users.length})</h2>
+                    <table className="user-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre de Usuario</th>
+                                <th>Correo Electrónico</th>
+                                <th>Tipo</th>
+                                <th>Carrera</th>
+                                <th>Acciones</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </section>
-        </div>
+                        </thead>
+                        <tbody>
+                            {users.map((user) => (
+                                <tr key={user.idUser}>
+                                    <td data-label="ID">{user.idUser}</td>
+                                    <td data-label="Nombre de Usuario">{user.UserName}</td>
+                                    <td data-label="Correo Electrónico">{user.CorreoUser}</td>
+                                    <td data-label="Tipo">{user.TipoUser}</td>
+                                    <td data-label="Carrera">{user.idCarrera || 'Sin Asignar'}</td>
+                                    <td data-label="Acciones">
+                                        {/* Botón de EDICIÓN */}
+                                        <button 
+                                            className="edit-button"
+                                            onClick={() => handleEdit(user)}
+                                        >
+                                            Editar
+                                        </button>
+                                        
+                                        {/* Botón de ELIMINACIÓN (llama a la modal) */}
+                                        <button 
+                                            className="delete-button"
+                                            onClick={() => handleDeleteClick(user)}
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </section>
+            </div>
+            </div>
     );
 }
 
