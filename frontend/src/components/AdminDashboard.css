@@ -75,6 +75,23 @@
     background-color: #d88e23;
 }
 
+.admin-content-area {
+    padding: 20px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.admin-dashboard-container h1{
+    font-size: 32px;
+    color: var(--dark-green);
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.dashboard-nav-links{
+    margin-top: 20px;
+}
+
 /* --- Media Queries para Responsividad --- */
 
 /* Para Tablets (hasta 768px) */
