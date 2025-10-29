@@ -1,0 +1,65 @@
+/* frontend/src/components/NavBar.css */
+:root {
+    --dark-green: #0B3D2E;
+    --teal-mint: #3EDFC1;
+    --white: #FFFFFF;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: var(--dark-green); /* Color primario */
+    color: var(--white);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 999;
+}
+
+.navbar-brand {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--teal-mint); /* Color de acento */
+}
+
+.navbar-links {
+    flex-grow: 1; /* Permite que los enlaces ocupen el espacio central */
+    text-align: center;
+}
+
+.navbar-links .nav-link {
+    color: var(--white);
+    text-decoration: none;
+    margin: 0 15px; /* Espacio entre links */
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.navbar-links .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-user-info {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.logout-button {
+    background-color: var(--teal-mint);
+    color: var(--dark-green);
+    border: none;
+    padding: 8px 12px;
+    margin-left: 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: opacity 0.2s;
+}
+
+.logout-button:hover {
+    opacity: 0.9;
+}
