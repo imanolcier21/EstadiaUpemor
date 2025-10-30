@@ -28,6 +28,9 @@ function AdminDashboard() {
                         <Link to="/admin/carreras" className="nav-button">
                             Gestión de Carreras
                         </Link>
+                        <Link to="/admin/posts" className="nav-button">
+                            Gestión de Publicaciones
+                        </Link>
                     </div>
                 </div>
             </div>
