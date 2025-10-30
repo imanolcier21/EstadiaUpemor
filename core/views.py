@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.decorators import permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Usuario, Carrera
+from .models import Usuario, Carrera, Post
 from .serializers import CarreraSerializer
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
@@ -17,6 +17,8 @@ from rest_framework.decorators import api_view # Necesario para register/login
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import logout as django_logout
+from rest_framework.filters import SearchFilter, OrderingFilter
+from .serializers import UsuarioSerializer, CarreraSerializer, PostSerializer
 
 
 # --- VISTAS PÚBLICAS DE AUTENTICACIÓN ---
@@ -227,3 +229,34 @@ class CarreraViewSet(viewsets.ModelViewSet):
         else:
             self.permission_classes = [permissions.IsAuthenticated]
         return [Permission()for Permission in self.permission_classes]
+
+class IsOwnerOrAdmin(permissions.BasePermission):
+    """Permite editar/eliminar solo al autor o usuarios admin/superuser."""
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_authenticated:
+            # El autor de la publicación
+            if obj.idUser == request.user:
+                return True
+            # Usuarios Admin o Superuser pueden borrar/editar
+            if request.user.TipoUser == 'Admin' or request.user.is_superuser:
+                return True
+        return False
+
+class PostViewSet(viewsets.ModelViewSet):
+    queryset = Post.objects.all().order_by('-FechCreacPost')
+    serializer_class = PostSerializer
+    parser_classes = (MultiPartParser, FormParser)
+    filter_backends = [SearchFilter, OrderingFilter]
+    search_fields = ['TextPost', 'idUser__UserName'] # Búsqueda por texto y nombre de autor
+    ordering_fields = ['FechCreacPost']
+
+    def get_permissions(self):
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [IsOwnerOrAdmin()]
+        elif self.action in ['create','list','retrieve']:
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
+
+    def perform_create(self, serializer):
+        # Asignar el usuario que hace la publicación como autor
+        serializer.save(idUser=self.request.user)
