@@ -8,6 +8,8 @@ router = DefaultRouter()
 # Registra el ViewSet. Esto genera: /usuarios/, /usuarios/{id}/
 router.register(r'usuarios', views.UsuarioViewSet)
 router.register(r'carreras', views.CarreraViewSet)
+# Registra el ViewSet para publicaciones
+router.register(r'posts', views.PostViewSet)
 
 urlpatterns = [
     # Rutas para el login/registro público (Estudiantes)
