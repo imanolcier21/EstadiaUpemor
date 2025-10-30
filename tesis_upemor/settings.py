@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-41ah)q4cgsdv5t6ivv+^uf*oc$7!541p(&@v(yob$_spts*^-j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -51,7 +52,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -106,7 +106,7 @@ WSGI_APPLICATION = 'tesis_upemor.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Estadia',        # Nombre de la base de datos que acabas de crear
+        'NAME': 'estadia',        # Nombre de la base de datos que acabas de crear
         'USER': 'imanolcier',    # Por defecto, 'tu_nombre_de_usuario_mac'
         'PASSWORD': '',                   # Deja esto en blanco o con tu contraseña
         'HOST': 'localhost',
@@ -162,3 +162,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom user model
 AUTH_USER_MODEL = 'core.Usuario'
+
+MEDIA_URL = 'post_media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'post_media')
