@@ -121,7 +121,8 @@ class UsuarioGrupo(models.Model):
 class Post(models.Model):
     idPost = models.AutoField(primary_key=True)
     TextPost = models.CharField(max_length=255, null=True, blank=True)
-    MediaPost = models.JSONField(null=True, blank=True)
+    # Solo aceptar imagenes y videos
+    MediaPost = models.FileField(upload_to='', null=True, blank=True, help_text='Solo imágenes o videos')
     FechCreacPost = models.DateTimeField(auto_now_add=True)
     FechUpdatePost = models.DateTimeField(null=True, blank=True)
     SentimientoScore = models.FloatField(null=True, blank=True)
