@@ -1,15 +1,17 @@
 // frontend/src/components/StudentDashboard.js
 import React from 'react';
+import PostCreateForm from './PostCreateForm';
+import PostFeed from './PostFeed';
 
-function StudentDashboard() {
-    return (
-        <div>
-            <h1>Feed Principal (Estudiante)</h1>
-            <p>Bienvenido, Estudiante. Aquí verás las publicaciones y podrás interactuar.</p>
-            {/* Aquí irá el componente del Feed (Módulo 3) */}
-            
-        </div>
-    );
-}
+const StudentDashboard = () => {
+  return (
+    <div style={{ maxWidth: 600, margin: 'auto', padding: 24 }}>
+      <h2>Bienvenido al Muro</h2>
+      <PostCreateForm />
+      <hr />
+      <PostFeed />
+    </div>
+  );
+};
 
 export default StudentDashboard;
