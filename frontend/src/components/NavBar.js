@@ -18,6 +18,9 @@ function NavBar() {
     // 1. Definición de hipervínculos dinámicos
     const links = [
         { path: isAdmin ? '/dashboard/admin' : '/dashboard/estudiante', label: 'Inicio' },
+        { path: '/inbox', label: 'Mensajes 💬' },
+        { path: '/perfil/mio', label: 'Mi perfil' },
+        { path: '/usuarios/explorar', label: 'Explorar usuarios' },
     ];
     
     return (
