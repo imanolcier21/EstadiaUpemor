@@ -15,6 +15,7 @@ function UserEditForm({ user, onClose }) {
         TipoUser: user.TipoUser || 'Estudiante',
         // La contraseña se deja vacía en el estado inicial por seguridad
         password: '', 
+        genero: user.genero || '',
     });
     const [message, setMessage] = useState(''); // Estado para mensajes de feedback
 
@@ -90,6 +91,14 @@ function UserEditForm({ user, onClose }) {
                     <option value="Estudiante">Estudiante</option>
                     <option value="Profesor">Profesor</option>
                     <option value="Admin">Administrador</option>
+                </select>
+
+                <select name="genero" value={formData.genero} onChange={handleChange} required>
+                    <option value="">Selecciona Género</option>
+                    <option value="Masculino">Masculino</option>
+                    <option value="Femenino">Femenino</option>
+                    <option value="Otro">Otro</option>
+                    <option value="Prefiero no decirlo">Prefiero no decirlo</option>
                 </select>
 
                 <button type="submit">Guardar Cambios</button>
