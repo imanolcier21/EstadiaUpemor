@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import CommentSection from './CommentSection';
 
 function getCookie(name) {
   let cookieValue = null;
@@ -201,6 +202,8 @@ const PostFeed = ({ refreshFlag }) => {
               )}
             </>
           )}
+          {/* Sección de comentarios por post */}
+          <CommentSection idPost={post.idPost} />
         </div>
       ))}
     </div>
