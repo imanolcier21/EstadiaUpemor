@@ -13,6 +13,7 @@ function UserCreationForm({ onUserCreated }) {
         ApePatUser: '',
         ApeMatUser: '',
         TipoUser: 'Estudiante', // Default role
+        genero: '',
     });
     const [message, setMessage] = useState('');
 
@@ -74,6 +75,14 @@ function UserCreationForm({ onUserCreated }) {
                 <option value="Estudiante">Estudiante</option>
                 <option value="Profesor">Profesor</option>
                 <option value="Admin">Administrador</option>
+            </select>
+
+            <select name="genero" onChange={handleChange} value={formData.genero} required>
+                <option value="">Selecciona Género</option>
+                <option value="Masculino">Masculino</option>
+                <option value="Femenino">Femenino</option>
+                <option value="Otro">Otro</option>
+                <option value="Prefiero no decirlo">Prefiero no decirlo</option>
             </select>
 
             <button type="submit" className="primary-button">Crear Usuario</button>
