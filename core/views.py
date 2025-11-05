@@ -19,6 +19,23 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import logout as django_logout
 from rest_framework.filters import SearchFilter, OrderingFilter
 from .serializers import UsuarioSerializer, CarreraSerializer, PostSerializer
+from .models import Comentario
+from .serializers import ComentarioSerializer
+from .models import MensajeDirecto
+from .serializers import MensajeDirectoSerializer
+from django.db import models
+from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.conf import settings
+from django.utils.http import urlsafe_base64_decode
+from django.core.exceptions import ValidationError
+from django.utils.decorators import method_decorator
+from .serializers import UsuarioExplorarSerializer
+from rest_framework.pagination import PageNumberPagination
+from django.db.models import Q
 
 
 # --- VISTAS PÚBLICAS DE AUTENTICACIÓN ---
@@ -142,7 +159,14 @@ class UsuarioViewSet(viewsets.ModelViewSet):
     """
     queryset = Usuario.objects.all().order_by('idUser')
     serializer_class = UsuarioSerializer
-    permission_classes = [IsAdminOrSuperUser] # Aplica la restricción de acceso
+
+    def get_permissions(self):
+        # Solo permito a admins crear, actualizar o borrar, pero cualquiera autenticado puede listar y ver
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            self.permission_classes = [IsAdminOrSuperUser]
+        else:  # 'list', 'retrieve'
+            self.permission_classes = [permissions.IsAuthenticated]
+        return [perm() for perm in self.permission_classes]
 
     # Modificación del método create (POST) - CREAR USUARIO/ADMIN
     def create(self, request, *args, **kwargs):
@@ -260,3 +284,184 @@ class PostViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         # Asignar el usuario que hace la publicación como autor
         serializer.save(idUser=self.request.user)
+
+class IsOwnerOrAdminComentario(permissions.BasePermission):
+    """Permite editar/eliminar solo al autor o admin."""
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_authenticated:
+            if obj.idUser == request.user:
+                return True
+            if request.user.TipoUser == 'Admin' or request.user.is_superuser:
+                return True
+        return False
+
+class ComentarioViewSet(viewsets.ModelViewSet):
+    queryset = Comentario.objects.all().order_by('FechCreacComen')
+    serializer_class = ComentarioSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Permite filtrar por idPost
+        post_id = self.request.query_params.get('idPost')
+        qs = super().get_queryset()
+        if post_id:
+            qs = qs.filter(idPost__idPost=post_id)
+        return qs
+
+    def get_permissions(self):
+        if self.action in ['update', 'partial_update', 'destroy']:
+            return [IsOwnerOrAdminComentario()]
+        return [permissions.IsAuthenticated()]
+
+    def perform_create(self, serializer):
+        serializer.save(idUser=self.request.user)
+
+class IsInvolvedOrAdminMensaje(permissions.BasePermission):
+    """Solo el emisor, receptor o admin/superuser pueden ver/interactuar."""
+    def has_object_permission(self, request, view, obj):
+        if request.user.is_authenticated:
+            if obj.sendUser == request.user or obj.receiveUser == request.user:
+                return True
+            if request.user.TipoUser == 'Admin' or request.user.is_superuser:
+                return True
+        return False
+
+class MensajeDirectoViewSet(viewsets.ModelViewSet):
+    queryset = MensajeDirecto.objects.all().order_by('-FechMensaje')
+    serializer_class = MensajeDirectoSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        # Solo ve mensajes donde participa
+        qs = qs.filter(models.Q(sendUser=user) | models.Q(receiveUser=user))
+        # Opcional: filtrar por otro usuario para chat exclusivo
+        other_id = self.request.query_params.get('user')
+        if other_id:
+            qs = qs.filter(models.Q(sendUser__idUser=other_id) | models.Q(receiveUser__idUser=other_id))
+        return qs
+
+    def get_permissions(self):
+        if self.action in ['destroy', 'update', 'partial_update']:
+            return [IsInvolvedOrAdminMensaje()]
+        return [permissions.IsAuthenticated()]
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        data = self.request.data
+        # Identifica receptor por id, evita que el usuario mande a sí mismo (opcional)
+        rec_id = data.get('receiveUser')
+        from .models import Usuario
+        receptor = Usuario.objects.get(idUser=rec_id)
+        serializer.save(sendUser=user, receiveUser=receptor)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class PasswordResetRequestAPIView(APIView):
+    """
+    POST: { "email": "algo@correo.com" }
+    Envía correo con enlace de recuperación si existe el usuario.
+    """
+    permission_classes = []
+    authentication_classes = []
+
+    def post(self, request):
+        email = request.data.get('email', '').strip().lower()
+        User = get_user_model()
+        try:
+            user = User.objects.get(CorreoUser__iexact=email)
+        except User.DoesNotExist:
+            # No revelar si existe (by design)
+            return Response({'message': 'Si el correo está registrado, se enviará un enlace para restablecer la contraseña.'}, status=status.HTTP_200_OK)
+        # Generar link seguro
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')
+        reset_link = f"{frontend_url}/password-reset/confirm?uid={uid}&token={token}"
+        # Enviar correo
+        send_mail(
+            subject="Restablecimiento de contraseña",
+            message=f"Hola {user.UserName},\n\nPara restablecer tu contraseña, haz clic en el siguiente enlace:\n{reset_link}\n\nSi no solicitaste esto, ignora este correo.",
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'no-reply@upeapp.com'),
+            recipient_list=[user.CorreoUser],
+            fail_silently=False,
+        )
+        return Response({'message': 'Si el correo está registrado, se enviará un enlace para restablecer la contraseña.'}, status=status.HTTP_200_OK)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class PasswordResetConfirmAPIView(APIView):
+    """
+    POST: { "uid": "...", "token": "...", "new_password": "nueva" }
+    Valida token y cambia la contraseña.
+    """
+    permission_classes = []
+    authentication_classes = []
+    def post(self, request):
+        uidb64 = request.data.get('uid', '')
+        token = request.data.get('token', '')
+        new_password = request.data.get('new_password')
+        User = get_user_model()
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            user = User.objects.get(pk=uid)
+        except (User.DoesNotExist, ValueError, TypeError):
+            return Response({'error': 'Enlace de restablecimiento inválido.'}, status=400)
+        if not default_token_generator.check_token(user, token):
+            return Response({'error': 'El enlace o token es inválido o expiró.'}, status=400)
+        if not new_password or len(new_password) < 6:
+            return Response({'error': 'La nueva contraseña debe tener al menos 6 caracteres.'}, status=400)
+        try:
+            user.set_password(new_password)
+            user.save()
+        except ValidationError as e:
+            return Response({'error': str(e)}, status=400)
+        return Response({'message': '¡Contraseña restablecida correctamente!'}, status=200)
+
+class MiPerfilView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        serializer = UsuarioSerializer(request.user, context={'request': request})
+        return Response(serializer.data)
+
+    def put(self, request):
+        user = request.user
+        serializer = UsuarioSerializer(user, data=request.data, partial=False, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    def patch(self, request):
+        user = request.user
+        serializer = UsuarioSerializer(user, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+class PerfilPublicoView(APIView):
+    def get(self, request, username):
+        usuario = get_object_or_404(Usuario, UserName=username, is_profile_public=True)
+        serializer = UsuarioSerializer(usuario, context={'request': request})
+        data = serializer.data
+        if not usuario.show_posts_public:
+            data['show_posts_public'] = False
+        if not usuario.mostrar_contacto:
+            data['info_contacto'] = None
+        return Response(data)
+
+class UsuarioExplorarPagination(PageNumberPagination):
+    page_size = 12
+
+class ExplorarUsuariosView(APIView):
+    def get(self, request):
+        query = request.GET.get('search','').strip()
+        qs = Usuario.objects.filter(is_profile_public=True)
+        if query:
+            qs = qs.filter(Q(UserName__icontains=query) | Q(NomUser__icontains=query) | Q(ApePatUser__icontains=query) | Q(descripcion__icontains=query))
+        qs = qs.order_by('-FechUnido')
+        paginator = UsuarioExplorarPagination()
+        page = paginator.paginate_queryset(qs, request)
+        serializer = UsuarioExplorarSerializer(page, many=True, context={'request': request})
+        return paginator.get_paginated_response(serializer.data)
