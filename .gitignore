@@ -4,14 +4,17 @@ __pycache__/
 *$py.class
 
 # Virtual environment
-Estadia/
 venv/
 .venv/
+.env/
+.env.*
+.venv.bak/
 
 # Django stuff:
 db.sqlite3
 *.sqlite3
 *.log
+post_media/
 
 # VSCode/IDE
 .vscode/
@@ -22,21 +25,22 @@ db.sqlite3
 frontend/node_modules/
 frontend/build/
 
-# Archivos del sistema
+# Archivos del sistema / grandes
 .DS_Store
 Thumbs.db
-
-# Archivos PDF y documentos grandes
 *.pdf
+*.bak
+*.tmp
+*.orig
 
 # Archivos temporales
 *.tmp
 *.bak
 
-# Otros archivos ocultan información sensible
-env/
-.env
-.env.*
+# Otros archivos que puedan contener secretos o configuración
+README.old.md
+*.env
 
 # Otros
-*.orig
+FRM_*.pdf
+TESINA*.pdf
