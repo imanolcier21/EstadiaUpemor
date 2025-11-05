@@ -13,6 +13,12 @@ import AdminLayout from './components/AdminLayout';
 import PostCreateForm from './components/PostCreateForm';
 import PostFeed from './components/PostFeed';
 import AdminPostManagement from './components/AdminPostManagement';
+import Inbox from './components/Inbox';
+import PasswordResetRequest from './components/PasswordResetRequest';
+import PasswordResetConfirm from './components/PasswordResetConfirm';
+import MiPerfil from './components/MiPerfil';
+import PerfilUsuario from './components/PerfilUsuario';
+import ExplorarUsuarios from './components/ExplorarUsuarios';
 
 function FeedPage() {
   // Refresca el feed tras crear post nuevo
@@ -33,9 +39,12 @@ function App() {
       <Routes>
         {/* RUTA PÚBLICA / LOGIN */}
         <Route path="/" element={<AuthPage />} />
+        <Route path="/password-reset" element={<PasswordResetRequest />} />
+        <Route path="/password-reset/confirm" element={<PasswordResetConfirm />} />
         <Route path="/onboarding/estudiante" element={<StudentOnboarding />} />
         {/* FEED DE PUBLICACIONES (pruebas rápidas) */}
         <Route path="/feed" element={<FeedPage />} />
+        <Route path="/inbox" element={<Inbox />} />
         {/* RUTA CENTRALIZADA: Un solo Layout que maneja TODO el contenido después del login */}
         <Route element={<AdminLayout />}>
             {/* 1. Dashboard Principal (Ruta: /dashboard/admin) */}
@@ -47,6 +56,9 @@ function App() {
             <Route path="/dashboard/estudiante" element={<StudentDashboard />} />
             {/* 4. Gestión avanzada de publicaciones (Admin) */}
             <Route path="/admin/posts" element={<AdminPostManagement />} />
+            <Route path="/perfil/mio" element={<MiPerfil />} />
+            <Route path="/usuarios/explorar" element={<ExplorarUsuarios />} />
+            <Route path="/perfil/:username" element={<PerfilUsuario />} />
         </Route>
         <Route path="*" element={<AuthPage />} />
       </Routes>
