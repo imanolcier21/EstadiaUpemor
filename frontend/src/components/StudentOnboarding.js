@@ -11,6 +11,7 @@ function StudentOnboarding() {
     const [formData, setFormData] = useState({
         carrera_id: '',
         foto_perfil: null, // Para manejar el archivo
+        genero: '',
         // Puedes añadir aquí el estado de 'gustos'
     });
     const [message, setMessage] = useState({ text: '', type: '' });
@@ -71,6 +72,7 @@ function StudentOnboarding() {
         if (formData.foto_perfil) {
             dataToSend.append('foto_perfil', formData.foto_perfil);
         }
+        dataToSend.append('genero', formData.genero);
 
         try {
             // Nota: Se usa un fetch POST para enviar archivos/MultiPart
@@ -145,6 +147,24 @@ function StudentOnboarding() {
                             accept="image/*"
                             onChange={handleChange} 
                         />
+                    </div>
+
+                    {/* CAMPO DE GENERO */}
+                    <div className="form-group">
+                        <label htmlFor="genero">Género</label>
+                        <select 
+                            id="genero" 
+                            name="genero" 
+                            value={formData.genero}
+                            onChange={handleChange} 
+                            required
+                        >
+                            <option value="">Selecciona tu género</option>
+                            <option value="Masculino">Masculino</option>
+                            <option value="Femenino">Femenino</option>
+                            <option value="Otro">Otro</option>
+                            <option value="Prefiero no decirlo">Prefiero no decirlo</option>
+                        </select>
                     </div>
 
                     {/* [AQUÍ IRÍA EL CAMPO DE GUSTOS/INTERESES SI LO IMPLEMENTAS] */}
