@@ -1,7 +1,7 @@
 // frontend/src/components/AuthPage.js
 import React, { useState } from 'react';
 import logo from '../assets/logo.jpg';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import './AuthPage.css';
 import { useAuth } from '../context/AuthContext';
 
@@ -17,6 +17,7 @@ function AuthPage() {
     const [apePatUser, setApePatUser] = useState('');
     const [apeMatUser, setApeMatUser] = useState('');
     const [isRegistering, setIsRegistering] = useState(false);
+    const [genero, setGenero] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -32,6 +33,7 @@ function AuthPage() {
             nom_user: nomUser,
             ape_pat_user: apePatUser,
             ape_mat_user: apeMatUser,
+            genero: genero,
         };
 
         try {
@@ -111,6 +113,16 @@ function AuthPage() {
                                     required
                                 />
                             </div>
+                            <div className="form-group">
+                                <label htmlFor="genero">Género:</label>
+                                <select id="genero" value={genero} onChange={(e) => setGenero(e.target.value)} required>
+                                    <option value="">Selecciona tu género</option>
+                                    <option value="Masculino">Masculino</option>
+                                    <option value="Femenino">Femenino</option>
+                                    <option value="Otro">Otro</option>
+                                    <option value="Prefiero no decirlo">Prefiero no decirlo</option>
+                                </select>
+                            </div>
                         </>
                     )}
                     <div className="form-group">
@@ -127,7 +139,7 @@ function AuthPage() {
                 </form>
 
                 <p className="forgot-password">
-                    <a href="#">¿Olvidaste tu contraseña?</a>
+                    <Link to="/password-reset">¿Olvidaste tu contraseña?</Link>
                 </p>
                 <button className="toggle-auth" onClick={() => setIsRegistering(!isRegistering)}>
                     {isRegistering ? '¿Ya tienes cuenta? Inicia sesión' : '¿No tienes cuenta? Regístrate'}
