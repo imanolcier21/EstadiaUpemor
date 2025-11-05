@@ -46,6 +46,12 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         ('Publico', 'Publico'),
         ('Privado', 'Privado'),
     )
+    GENERO_CHOICES = (
+        ('Masculino', 'Masculino'),
+        ('Femenino', 'Femenino'),
+        ('Otro', 'Otro'),
+        ('Prefiero no decirlo', 'Prefiero no decirlo'),
+    )
 
     idUser = models.AutoField(primary_key=True)
     NomUser = models.CharField(max_length=45)
@@ -64,6 +70,13 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     FechUnido = models.DateTimeField(auto_now_add=True)
     PrivacidadUser = models.CharField(max_length=10, choices=PRIVACIDAD_CHOICES, default='Publico')
     is_profile_complete = models.BooleanField(default=False)
+    descripcion = models.TextField(null=True, blank=True, help_text='Descripción o biografía del usuario')
+    foto_perfil = models.ImageField(upload_to='profile_photos/', null=True, blank=True, help_text='Foto de perfil')
+    is_profile_public = models.BooleanField(default=True, help_text='¿Perfil visible públicamente?')
+    show_posts_public = models.BooleanField(default=True, help_text='¿Mostrar publicaciones del usuario públicamente?')
+    mostrar_contacto = models.BooleanField(default=False, help_text='¿Mostrar info de contacto?')
+    info_contacto = models.CharField(max_length=100, null=True, blank=True, help_text='Teléfono, email alterno, u otro medio')
+    genero = models.CharField(max_length=20, choices=GENERO_CHOICES, null=True, blank=True, help_text='Género del usuario')
 
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
