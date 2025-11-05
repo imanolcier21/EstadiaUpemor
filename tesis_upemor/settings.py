@@ -165,3 +165,13 @@ AUTH_USER_MODEL = 'core.Usuario'
 
 MEDIA_URL = 'post_media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'post_media')
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'rimanolpaulin@gmail.com'   # <-- Cambia por tu cuenta real
+EMAIL_HOST_PASSWORD = 'ovqc dsxp gqhc ufzy'
+DEFAULT_FROM_EMAIL = 'UpeApp <no-reply@upeapp.com>'
+FRONTEND_URL = 'http://localhost:3000'
