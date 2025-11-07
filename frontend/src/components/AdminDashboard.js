@@ -8,6 +8,7 @@ import './AdminDashboard.css';
 
 function AdminDashboard() {
     const { user } = useAuth(); 
+    const isAdmin = user && (user.userType === 'Admin' || user.isSuperuser);
 
     if (!user) {
         return <div className="loading-message">Cargando dashboard...</div>; 
@@ -31,6 +32,15 @@ function AdminDashboard() {
                         <Link to="/admin/posts" className="nav-button">
                             Gestión de Publicaciones
                         </Link>
+                        <Link to="/grupos" className="nav-button">
+                            Gestión de Grupos
+                        </Link>
+                        <Link to="/admin/reportes" className="dashboard-btn">
+                            Dashboard de Reportes 📈
+                        </Link>
+                        {isAdmin && (
+                            <Link to="/admin/backup" className="dashboard-btn" style={{background:'#2172b2',color:'#fff',fontWeight:'bold'}}>Respaldo BD 💾</Link>
+                        )}
                     </div>
                 </div>
             </div>
