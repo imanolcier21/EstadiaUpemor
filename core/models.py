@@ -3,7 +3,7 @@ from django.db import models
 
 class Carrera(models.Model):
     idCarrera = models.AutoField(primary_key=True)
-    NomCarrera = models.CharField(max_length=45)
+    NomCarrera = models.CharField(max_length=255)
     DescCarrera = models.CharField(max_length=255, null=True, blank=True)
     FechCreacion = models.DateTimeField(auto_now_add=True)
 
@@ -105,6 +105,8 @@ class Grupo(models.Model):
     PrivGrupo = models.CharField(max_length=10, choices=PRIVACIDAD_CHOICES, default='Publico')
     FechCreaGrupo = models.DateTimeField(auto_now_add=True)
     idUser = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='idUser') # Creador del grupo
+    ReglasGrupo = models.TextField(null=True, blank=True, help_text='Reglas o normas del grupo')
+    ImagenGrupo = models.ImageField(upload_to='grupo_images/', null=True, blank=True, help_text='Imagen de grupo')
 
     class Meta:
         db_table = 'Grupo'
@@ -117,10 +119,15 @@ class UsuarioGrupo(models.Model):
         ('Miembro', 'Miembro'),
         ('Admin', 'Admin'),
     )
+    ESTADO_CHOICES = (
+        ('pendiente', 'Pendiente'),
+        ('aceptado', 'Aceptado'),
+    )
 
     idUsuarioGrupo = models.AutoField(primary_key=True)
     IngresoGrupo = models.DateTimeField(auto_now_add=True)
     Rol = models.CharField(max_length=10, choices=ROL_CHOICES, default='Miembro')
+    estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='aceptado')
     idGrupo = models.ForeignKey(Grupo, on_delete=models.CASCADE, db_column='idGrupo')
     idUser = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='idUser')
 
@@ -142,6 +149,7 @@ class Post(models.Model):
     SentimientoLabel = models.CharField(max_length=255, null=True, blank=True)
     idUser = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='idUser')
     idGrupo = models.ForeignKey(Grupo, on_delete=models.SET_NULL, null=True, blank=True, db_column='idGrupo')
+    AlertaIA = models.BooleanField(default=False, help_text='¿Se disparó alerta automática de IA en este post?')
 
     class Meta:
         db_table = 'Post'
@@ -158,6 +166,7 @@ class Comentario(models.Model):
     SentimientoLabelCom = models.CharField(max_length=255, null=True, blank=True)
     idPost = models.ForeignKey(Post, on_delete=models.CASCADE, db_column='idPost')
     idUser = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='idUser')
+    AlertaIACom = models.BooleanField(default=False, help_text='¿Alerta IA en este comentario?')
 
     class Meta:
         db_table = 'Comentario'
@@ -166,13 +175,24 @@ class Comentario(models.Model):
         return f"Comment by {self.idUser.UserName} on {self.idPost}"
 
 class Evento(models.Model):
+    MODALIDAD_CHOICES = (
+        ('fisica', 'Física'),
+        ('virtual', 'Virtual'),
+    )
+    ESTADO_CHOICES = (
+        ('vigente', 'Vigente'),
+        ('cancelado', 'Cancelado'),
+    )
     idEvento = models.AutoField(primary_key=True)
-    TituloEvent = models.CharField(max_length=45)
-    DescEvent = models.CharField(max_length=255, null=True, blank=True)
-    FechEvent = models.DateTimeField()
+    TituloEvent = models.CharField(max_length=120)
+    DescEvent = models.TextField(null=True, blank=True)
+    FechEvent = models.DateTimeField(null=True, blank=True)
+    Duracion = models.DurationField(null=True, blank=True)
     LugarEvent = models.CharField(max_length=255, null=True, blank=True)
-    Asistencia = models.IntegerField(default=0, null=True, blank=True)
-    idUser = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='idUser')
+    Modalidad = models.CharField(max_length=10, choices=MODALIDAD_CHOICES, null=True, blank=True)
+    Estado = models.CharField(max_length=10, choices=ESTADO_CHOICES, default='vigente')
+    creador = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='idCreador', null=True, blank=True)
+    FechCreado = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     class Meta:
         db_table = 'Evento'
@@ -180,13 +200,34 @@ class Evento(models.Model):
     def __str__(self):
         return self.TituloEvent
 
+class UsuarioEvento(models.Model):
+    TIPO_CHOICES = (
+        ('asistencia', 'Asistencia'),
+        ('inscripcion', 'Inscripción'),
+    )
+    idUsuarioEvento = models.AutoField(primary_key=True)
+    idUser = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='idUser')
+    idEvento = models.ForeignKey(Evento, on_delete=models.CASCADE, db_column='idEvento')
+    tipo = models.CharField(max_length=15, choices=TIPO_CHOICES, default='asistencia')
+    FechRegistro = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'UsuarioEvento'
+        unique_together = ('idUser', 'idEvento')
+
+    def __str__(self):
+        return f"{self.idUser.UserName} en {self.idEvento.TituloEvent}";
+
 class Chatbot(models.Model):
     idChatbot = models.AutoField(primary_key=True)
     idUser = models.ForeignKey(Usuario, on_delete=models.CASCADE, db_column='idUser')
     FechInterac = models.DateTimeField(auto_now_add=True)
-    UserQuery = models.CharField(max_length=255)
-    Response = models.CharField(max_length=255)
+    UserQuery = models.TextField()
+    Response = models.TextField()
     Topic = models.CharField(max_length=45, null=True, blank=True)
+    SentimientoScore = models.FloatField(null=True, blank=True)
+    SentimientoLabel = models.CharField(max_length=255, null=True, blank=True)
+    AlertaIAChat = models.BooleanField(default=False, help_text='¿Alerta IA en esta interacción del chatbot?')
 
     class Meta:
         db_table = 'Chatbot'
@@ -203,6 +244,9 @@ class MensajeDirecto(models.Model):
     FechMensaje = models.DateTimeField(auto_now_add=True)
     FechUpdateMensaje = models.DateTimeField(null=True, blank=True)
     Leido = models.BooleanField(default=False)
+    SentimientoScore = models.FloatField(null=True, blank=True)
+    SentimientoLabel = models.CharField(max_length=255, null=True, blank=True)
+    AlertaIAMsgDirecto = models.BooleanField(default=False, help_text='¿Alerta IA en este mensaje directo?')
 
     class Meta:
         db_table = 'MensajeDirecto'
@@ -228,3 +272,30 @@ class Notificacion(models.Model):
 
     def __str__(self):
         return f"Notification for {self.idUser.UserName}: {self.TipoNot}"
+
+class RecursoApoyo(models.Model):
+    TIPO_CHOICES = (
+        ('articulo', 'Artículo'),
+        ('video', 'Video'),
+        ('guia', 'Guía'),
+        ('pdf', 'PDF'),
+        ('otro', 'Otro'),
+    )
+    idRecurso = models.AutoField(primary_key=True)
+    tipo = models.CharField(max_length=15, choices=TIPO_CHOICES)
+    titulo = models.CharField(max_length=150)
+    descripcion = models.TextField(null=True, blank=True)
+    archivo = models.FileField(upload_to='recursos_apoyo/', null=True, blank=True)
+    url = models.URLField(null=True, blank=True)
+    categoria = models.CharField(max_length=50, null=True, blank=True)
+    etiqueta = models.JSONField(null=True, blank=True, help_text='Lista de etiquetas/tags')
+    fecha_publicacion = models.DateTimeField(auto_now_add=True)
+    autor = models.ForeignKey('Usuario', null=True, blank=True, on_delete=models.SET_NULL)
+    contador_vistas = models.IntegerField(default=0)
+    contador_descargas = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = 'RecursoApoyo'
+
+    def __str__(self):
+        return f"{self.titulo} ({self.tipo})"
