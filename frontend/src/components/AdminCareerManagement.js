@@ -13,7 +13,7 @@ function AdminCareerManagement() {
     // Estados de Formulario
     const [isFormVisible, setIsFormVisible] = useState(false);
     const [editingCareer, setEditingCareer] = useState(null); 
-    const [formInput, setFormInput] = useState({ idCarrera: '', NomCarrera: '' });
+    const [formInput, setFormInput] = useState({ NomCarrera: '', DescCarrera: '' });
 
     // Estado de Confirmación de Eliminación
     const [confirmingCareer, setConfirmingCareer] = useState(null);
@@ -46,13 +46,13 @@ function AdminCareerManagement() {
     // --- MANEJO DE FORMULARIO (CREATE & UPDATE) ---
     const handleOpenCreateForm = () => {
         setEditingCareer(null);
-        setFormInput({ idCarrera: '', NomCarrera: '' }); // Limpiar campos
+        setFormInput({ NomCarrera: '', DescCarrera: '' });
         setIsFormVisible(true);
     };
 
     const handleEditClick = (career) => {
         setEditingCareer(career);
-        setFormInput({ idCarrera: career.idCarrera, NomCarrera: career.NomCarrera });
+        setFormInput({ NomCarrera: career.NomCarrera, DescCarrera: career.DescCarrera });
         setIsFormVisible(true);
     };
 
@@ -158,17 +158,6 @@ function AdminCareerManagement() {
                 {isFormVisible && (
                     <form className="creation-form" onSubmit={handleSubmit}>
                         <div className="form-group">
-                            <label>Código (Ej: ITI, IET)</label>
-                            <input 
-                                type="text" 
-                                name="idCarrera" 
-                                value={formInput.idCarrera} 
-                                onChange={handleInputChange} 
-                                required 
-                                disabled={!!editingCareer} // No se debe editar el ID en la vista de edición
-                            />
-                        </div>
-                        <div className="form-group">
                             <label>Nombre Completo</label>
                             <input 
                                 type="text" 
@@ -176,6 +165,15 @@ function AdminCareerManagement() {
                                 value={formInput.NomCarrera} 
                                 onChange={handleInputChange} 
                                 required 
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Descripción</label>
+                            <textarea 
+                                name="DescCarrera" 
+                                value={formInput.DescCarrera} 
+                                onChange={handleInputChange}
+                                style={{ minHeight:'60px' }}
                             />
                         </div>
                         <button type="submit" className="primary-button">
@@ -192,16 +190,18 @@ function AdminCareerManagement() {
                     <table className="user-table">
                         <thead>
                             <tr>
-                                <th>Código</th>
+                                <th>ID</th>
                                 <th>Nombre de la Carrera</th>
+                                <th>Descripción</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {carreras.map((career) => (
                                 <tr key={career.idCarrera}>
-                                    <td data-label="Código">{career.idCarrera}</td>
+                                    <td data-label="ID">{career.idCarrera}</td>
                                     <td data-label="Nombre de la Carrera">{career.NomCarrera}</td>
+                                    <td data-label="Descripción">{career.DescCarrera || '-'}</td>
                                     <td data-label="Acciones">
                                         <button 
                                             className="edit-button"
