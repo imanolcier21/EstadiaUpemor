@@ -29,6 +29,7 @@ function getOtherUserFull(mensaje, currentUser, usuarios) {
 
 const Inbox = () => {
   const { user } = useAuth();
+  // TODOS los hooks van aquí antes del return
   const [messages, setMessages] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [conversations, setConversations] = useState([]);
@@ -38,6 +39,8 @@ const Inbox = () => {
   const [loading, setLoading] = useState(false);
   const [msgError, setMsgError] = useState(null);
   const [searchUser, setSearchUser] = useState('');
+  const [editId, setEditId] = useState(null);
+  const [editText, setEditText] = useState('');
 
   useEffect(() => {
     if (!user) return;
@@ -64,20 +67,27 @@ const Inbox = () => {
     }
     const chatLog = messages
       .filter(msg => {
-        // Debug: log de IDs
-        const match =
-          (Number(msg.sendUser) === Number(user.idUser) && Number(msg.receiveUser) === Number(selectedUser.idUser)) ||
-          (Number(msg.receiveUser) === Number(user.idUser) && Number(msg.sendUser) === Number(selectedUser.idUser));
-        if (!match) return false;
-        return true;
+        // Debug: LOG IDENTIDADES Y MENSAJES
+        console.log('[DEBUG] Filtrando chat:', {
+          userId: user.idUser,
+          selectedUserId: selectedUser.idUser,
+          msgId: msg.idMensajeDirecto,
+          sendUser: msg.sendUser,
+          receiveUser: msg.receiveUser,
+          remitente: msg.remitente,
+          destinatario: msg.destinatario,
+          mensaje: msg.Mensaje
+        });
+        const esDeMiParaOtro = Number(msg.sendUser) === Number(user.idUser) && Number(msg.receiveUser) === Number(selectedUser.idUser);
+        const esDeOtroParaMi = Number(msg.receiveUser) === Number(user.idUser) && Number(msg.sendUser) === Number(selectedUser.idUser);
+        if (esDeMiParaOtro || esDeOtroParaMi) return true;
+        return false;
       })
       .sort((a, b) => new Date(a.FechMensaje) - new Date(b.FechMensaje));
-    // Debug extra
     if (process.env.NODE_ENV !== 'production') {
-      console.log('user.idUser', user.idUser, '- selected', selectedUser.idUser);
-      console.log('Mensajes de la conversación:', chatLog);
+      console.log('[RESULTADO FILTRO] chat.length:', chatLog.length, 'Total mensajes:', messages.length, 'Selected:', selectedUser, 'User:', user);
       if (messages.length > 0 && chatLog.length === 0) {
-        console.warn('Filtro vacío: verifica los valores sendUser/receiveUser de los mensajes traídos ->', messages);
+        console.warn('[WARN] FILTRO VACÍO chat.length=0: MESSAGES:', messages, 'user:', user, 'selectedUser:', selectedUser);
       }
     }
     setChat(chatLog);
@@ -86,6 +96,9 @@ const Inbox = () => {
       if (el) el.scrollTop = el.scrollHeight;
     }, 50);
   }, [messages, selectedUser, user]);
+
+  // Validación de usuario siempre ANTES del return principal
+  if (!user || !user.idUser) return <div style={{margin:'3em',textAlign:'center', fontSize:19}}>Cargando usuario...</div>;
 
   async function fetchUsuarios() {
     try {
@@ -119,10 +132,14 @@ const Inbox = () => {
     if (!Array.isArray(msgs) || !Array.isArray(usrs) || !user) return;
     const convs = {};
     msgs.forEach(msg => {
-      const other = getOtherUserFull(msg, user, usrs);
-      if (!convs[other.idUser]) convs[other.idUser] = { ...other, unread: 0, lastMsg: msg.FechMensaje };
-      if (!msg.Leido && Number(msg.receiveUser) === Number(user.idUser)) convs[other.idUser].unread++;
-      if (new Date(msg.FechMensaje) > new Date(convs[other.idUser].lastMsg)) convs[other.idUser].lastMsg = msg.FechMensaje;
+      // Aquí personalizamos: siempre el otro es quien no es el actual
+      let isSender = Number(msg.sendUser) === Number(user.idUser);
+      let otherId = isSender ? Number(msg.receiveUser) : Number(msg.sendUser);
+      let otherUser = usrs.find(u => Number(u.idUser) === otherId);
+      let otherName = otherUser ? otherUser.UserName : (isSender ? msg.destinatario : msg.remitente);
+      if (!convs[otherId]) convs[otherId] = { idUser: otherId, name: otherName, unread: 0, lastMsg: msg.FechMensaje };
+      if (!msg.Leido && Number(msg.receiveUser) === Number(user.idUser)) convs[otherId].unread++;
+      if (new Date(msg.FechMensaje) > new Date(convs[otherId].lastMsg)) convs[otherId].lastMsg = msg.FechMensaje;
     });
     setConversations(Object.values(convs).sort((a, b) => new Date(b.lastMsg) - new Date(a.lastMsg)));
   }
@@ -170,6 +187,65 @@ const Inbox = () => {
     }
   }
 
+  // --- MANEJA EDICIÓN DE MENSAJE ---
+  const handleEditClick = (msg) => {
+    setEditId(msg.idMensajeDirecto);
+    setEditText(msg.Mensaje);
+  };
+  const handleCancelEdit = () => {
+    setEditId(null); setEditText('');
+  };
+  const handleEditSubmit = async (msg) => {
+    if (!editText.trim()) return;
+    const csrftoken = getCookie('csrftoken');
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/mensajes/${msg.idMensajeDirecto}/`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify({ Mensaje: editText })
+      });
+      if (!res.ok) throw new Error('Error al editar el mensaje');
+      setEditId(null); setEditText('');
+      await fetchInbox();
+      openChat(selectedUser);
+    } catch {}
+    setLoading(false);
+  };
+  // --- MANEJA ELIMINAR MENSAJE ---
+  const handleDeleteMsg = async (msg) => {
+    if (!window.confirm('¿Eliminar este mensaje?')) return;
+    const csrftoken = getCookie('csrftoken');
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/mensajes/${msg.idMensajeDirecto}/`, {
+        method: 'DELETE', credentials: 'include', headers: { 'X-CSRFToken': csrftoken } });
+      if (!res.ok && res.status !== 204) throw new Error('Error al eliminar');
+      await fetchInbox();
+      openChat(selectedUser);
+    } catch {}
+    setLoading(false);
+  };
+  // --- MANEJA ELIMINAR CONVERSACIÓN ---
+  const handleDeleteChat = async () => {
+    if (!selectedUser || !window.confirm('¿Eliminar TODA la conversación con este usuario?')) return;
+    const csrftoken = getCookie('csrftoken');
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/mensajes/borrar_conversacion/?usuario=${selectedUser.idUser}`, {
+        method: 'DELETE', credentials: 'include', headers: { 'X-CSRFToken': csrftoken } });
+      if (!res.ok) throw new Error('Error al eliminar conversación');
+      await fetchInbox();
+      setSelectedUser(null);
+      setChat([]);
+    } catch {}
+    setLoading(false);
+  };
+
   return (
     <>
       <NavBar />
@@ -214,30 +290,50 @@ const Inbox = () => {
             <div style={{ margin: 'auto', color: '#888', fontSize: 17 }}>Selecciona una conversación o busca usuarios</div>
           ) : (
             <>
-              <div style={{ padding: 12, background: '#f5f7fa', borderBottom: '1px solid #ddd' }}>
+              <div style={{ padding: 12, background: '#f5f7fa', borderBottom: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <b style={{ fontSize: 15 }}>{selectedUser.name}</b>
+                <button onClick={handleDeleteChat} style={{ background: 'crimson', color: 'white', border: 'none', borderRadius: 7, padding: '5px 10px', fontSize: 13 }}>Eliminar conversación</button>
               </div>
               <div id="chat-window" style={{ flex: 1, padding: 12, overflowY: 'auto', background: '#f9fafd', fontSize: 15, minHeight: 0 }}>
-                {chat.length === 0 && <div style={{ color: '#aaa', fontSize:15 }}>No hay mensajes para mostrar.<br/>Conversación entre IDs: {user?.idUser} y {selectedUser?.idUser}</div>}
+                {chat.length === 0 && (
+                  <div style={{ color: '#aa5', fontSize: 15 }}>No hay mensajes para mostrar.</div>)}
                 {chat.map(msg => (
                   <div key={msg.idMensajeDirecto} style={{
                     marginBottom: 8,
-                    textAlign: Number(msg.sendUser) === Number(user.idUser) ? 'right' : 'left'
+                    textAlign: Number(msg.sendUser) === Number(user.idUser) ? 'right' : 'left',
+                    position: 'relative'
                   }}>
-                    <div style={{
-                      display: 'inline-block',
-                      background: Number(msg.sendUser) === Number(user.idUser) ? '#d5e7fa' : '#efefef',
-                      color: '#333',
-                      borderRadius: 7,
-                      padding: '6px 11px',
-                      minWidth: 35
-                    }}>{msg.Mensaje}</div>
-                    <div style={{ color: '#999', fontSize: 12 }}>{new Date(msg.FechMensaje).toLocaleString()}</div>
+                    {editId === msg.idMensajeDirecto ? (
+                      <>
+                        <textarea value={editText} onChange={e => setEditText(e.target.value)} style={{ width: '80%', minHeight: 30 }} />
+                        <button onClick={() => handleEditSubmit(msg)} style={{marginLeft: 4}}>Guardar</button>
+                        <button onClick={handleCancelEdit} style={{marginLeft: 2}}>Cancelar</button>
+                      </>
+                    ) : (
+                        <>
+                          <div style={{
+                            display: 'inline-block',
+                            background: Number(msg.sendUser) === Number(user.idUser) ? '#d5e7fa' : '#efefef',
+                            color: '#333',
+                            borderRadius: 7,
+                            padding: '6px 11px',
+                            minWidth: 35,
+                            maxWidth: 270,
+                            wordBreak: 'break-word',
+                            verticalAlign: 'middle'
+                          }}>{msg.Mensaje}</div>
+                          <div style={{ color: '#999', fontSize: 12 }}>{new Date(msg.FechMensaje).toLocaleString()}</div>
+                          {(Number(msg.sendUser) === Number(user.idUser)) &&
+                            <button onClick={() => handleEditClick(msg)} style={{ marginLeft: 5, fontSize: 11 }}>Editar</button>}
+                          {(Number(msg.sendUser) === Number(user.idUser) || Number(msg.receiveUser) === Number(user.idUser)) &&
+                            <button onClick={() => handleDeleteMsg(msg)} style={{ marginLeft: 5, fontSize: 11, color: 'crimson', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>Eliminar</button>}
+                        </>
+                      )}
                   </div>
                 ))}
               </div>
               <form onSubmit={handleSendMsg} style={{ display: 'flex', gap: 6, padding: 10, borderTop: '1px solid #ddd', background: '#fcfcfe' }}>
-                <input value={newMsg} onChange={e=>setNewMsg(e.target.value)} placeholder="Escribe un mensaje..." style={{ flex: 1, padding: 8 }} disabled={loading}/>
+                <input value={newMsg} onChange={e => setNewMsg(e.target.value)} placeholder="Escribe un mensaje..." style={{ flex: 1, padding: 8 }} disabled={loading}/>
                 <button type="submit" disabled={loading || !newMsg.trim() || !selectedUser}>Enviar</button>
               </form>
               {msgError && <div style={{ color: 'red', paddingLeft: 14 }}>{msgError}</div>}
