@@ -29,6 +29,14 @@ const MiPerfil = () => {
     const [subiendo, setSubiendo] = useState(false);
     const [mensaje, setMensaje] = useState('');
     const [error, setError] = useState('');
+    const [carreras, setCarreras] = useState([]);
+    // Al editar, cargar carreras:
+    useEffect(() => {
+        if (!modoEdicion) return;
+        fetch('/api/carreras/', { credentials: 'include' })
+            .then(res => res.json())
+            .then(setCarreras);
+    }, [modoEdicion]);
 
     // Cargar mis datos al iniciar
     useEffect(() => {
@@ -110,6 +118,12 @@ const MiPerfil = () => {
 
                     <select name="genero" value={form.genero || ''} onChange={handleInput} style={{marginTop: 8}}>
                         {GENERO_OPCIONES.map(op => <option key={op} value={op}>{op}</option>)}
+                    </select>
+                    <select name="idCarrera" value={form.idCarrera || ''} onChange={handleInput} style={{marginTop:10}} required>
+                        <option value="">Selecciona carrera...</option>
+                        {carreras.map(c => (
+                          <option key={c.idCarrera} value={c.idCarrera}>{c.NomCarrera}</option>
+                        ))}
                     </select>
                     <textarea name="descripcion" value={form.descripcion || ''} onChange={handleInput} placeholder="Descripción o biografía" style={{marginTop: 8}} />
 
