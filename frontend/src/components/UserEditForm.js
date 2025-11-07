@@ -1,5 +1,5 @@
 // frontend/src/components/UserEditForm.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Si tu AdminUserManagement.js usa rutas relativas, aquí también deberías usarlas:
 const API_BASE_URL = ''; // Usar ruta relativa si el proxy está configurado correctamente
@@ -18,6 +18,12 @@ function UserEditForm({ user, onClose }) {
         genero: user.genero || '',
     });
     const [message, setMessage] = useState(''); // Estado para mensajes de feedback
+    const [carreras, setCarreras] = useState([]);
+
+    useEffect(() => {
+      fetch('/api/carreras/', { credentials: 'include' })
+        .then(res => res.json()).then(setCarreras);
+    }, []);
 
     // Función para manejar los cambios en los campos del formulario
     const handleChange = (e) => {
@@ -79,6 +85,12 @@ function UserEditForm({ user, onClose }) {
             
             <form onSubmit={handleSubmit} className="creation-form">
                 {/* Campos precargados con los valores del estado (usando formData) */}
+                <select name="idCarrera" value={formData.idCarrera || ''} onChange={handleChange} required>
+                    <option value="">Selecciona carrera...</option>
+                    {carreras.map(c => (
+                        <option key={c.idCarrera} value={c.idCarrera}>{c.NomCarrera}</option>
+                    ))}
+                </select>
                 <input type="email" name="CorreoUser" value={formData.CorreoUser} onChange={handleChange} required />
                 <input type="text" name="UserName" value={formData.UserName} onChange={handleChange} required />
                 <input type="text" name="NomUser" value={formData.NomUser} onChange={handleChange} required />
