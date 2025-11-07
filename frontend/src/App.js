@@ -19,6 +19,16 @@ import PasswordResetConfirm from './components/PasswordResetConfirm';
 import MiPerfil from './components/MiPerfil';
 import PerfilUsuario from './components/PerfilUsuario';
 import ExplorarUsuarios from './components/ExplorarUsuarios';
+import GruposExplorar from './components/GruposExplorar';
+import MisGrupos from './components/MisGrupos';
+import GrupoDetalle from './components/GrupoDetalle';
+import EventosExplorar from './components/EventosExplorar';
+import EventoDetalle from './components/EventoDetalle';
+import EventoCrearEditar from './components/EventoCrearEditar';
+import ChatbotEmocional from './components/ChatbotEmocional';
+import AdminAlertasIA from './components/AdminAlertasIA';
+import DashboardReportes from './components/DashboardReportes';
+import AdminBackup from './components/AdminBackup';
 
 function FeedPage() {
   // Refresca el feed tras crear post nuevo
@@ -56,9 +66,20 @@ function App() {
             <Route path="/dashboard/estudiante" element={<StudentDashboard />} />
             {/* 4. Gestión avanzada de publicaciones (Admin) */}
             <Route path="/admin/posts" element={<AdminPostManagement />} />
+            <Route path="/grupos" element={<GruposExplorar />} />
+            <Route path="/grupos/mis" element={<MisGrupos />} />
+            <Route path="/grupos/:id" element={<GrupoDetalle />} />
             <Route path="/perfil/mio" element={<MiPerfil />} />
             <Route path="/usuarios/explorar" element={<ExplorarUsuarios />} />
             <Route path="/perfil/:username" element={<PerfilUsuario />} />
+            <Route path="/eventos" element={<EventosExplorar />} />
+            <Route path="/eventos/crear" element={<EventoCrearEditar />} />
+            <Route path="/eventos/:id" element={<EventoDetalle />} />
+            <Route path="/eventos/:id/editar" element={<EventoCrearEditar editar={true} />} />
+            <Route path="/chatbot" element={<ChatbotEmocional />} />
+            <Route path="/admin/alertas-ia" element={<AdminAlertasIA />} />
+            <Route path="/admin/reportes" element={<DashboardReportes />} />
+            <Route path="/admin/backup" element={<AdminBackup />} />
         </Route>
         <Route path="*" element={<AuthPage />} />
       </Routes>
