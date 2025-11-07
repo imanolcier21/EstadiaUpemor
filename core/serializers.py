@@ -4,6 +4,9 @@ from .models import Carrera
 from .models import Post
 from .models import Comentario
 from .models import MensajeDirecto
+from .models import Grupo, UsuarioGrupo
+from .models import Evento, UsuarioEvento
+from .models import RecursoApoyo
 
 class UsuarioSerializer(serializers.ModelSerializer):
     # Campo personalizado para la relación de Carrera (mostrar el nombre, no el ID)
@@ -30,6 +33,20 @@ class UsuarioSerializer(serializers.ModelSerializer):
             return url
         return None
 
+    def update(self, instance, validated_data):
+        # Maneja explícitamente la asignación de carrera si viene el ID en el request
+        idCarrera_id = self.initial_data.get('idCarrera')
+        if idCarrera_id:
+            from .models import Carrera
+            try:
+                carrera = Carrera.objects.get(idCarrera=idCarrera_id)
+                instance.idCarrera = carrera
+            except Carrera.DoesNotExist:
+                pass # O puedes lanzar un error ValidationError
+        # Elimina nested writes automáticos
+        validated_data.pop('idCarrera', None)
+        return super().update(instance, validated_data)
+
 # ---- UsuarioExplorarSerializer para búsquedas rápidas ----
 class UsuarioExplorarSerializer(serializers.ModelSerializer):
     foto_perfil_url = serializers.SerializerMethodField(read_only=True)
@@ -49,7 +66,7 @@ class UsuarioExplorarSerializer(serializers.ModelSerializer):
 class CarreraSerializer(serializers.ModelSerializer):
     class Meta:
         model = Carrera
-        fields = ['idCarrera', 'NomCarrera']
+        fields = ['idCarrera', 'NomCarrera', 'DescCarrera']
         read_only_fields = ('idCarrera',)
 
 class PostSerializer(serializers.ModelSerializer):
@@ -107,3 +124,87 @@ class MensajeDirectoSerializer(serializers.ModelSerializer):
             'Mensaje', 'MediaMensaje', 'FechMensaje', 'Leido', 'FechUpdateMensaje'
         ]
         read_only_fields = ['idMensajeDirecto', 'remitente', 'destinatario', 'sendUser', 'FechMensaje', 'FechUpdateMensaje']
+
+class GrupoSerializer(serializers.ModelSerializer):
+    creador_nombre = serializers.CharField(source='idUser.UserName', read_only=True)
+    imagen_url = serializers.SerializerMethodField(read_only=True)
+    miembros_count = serializers.SerializerMethodField(read_only=True)
+    estado = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Grupo
+        fields = [
+            'idGrupo', 'NomGrupo', 'DescGrupo', 'PrivGrupo', 'FechCreaGrupo',
+            'idUser', 'creador_nombre', 'ReglasGrupo', 'ImagenGrupo', 'imagen_url', 'miembros_count', 'estado'
+        ]
+        read_only_fields = ('idGrupo', 'FechCreaGrupo', 'creador_nombre', 'imagen_url', 'miembros_count', 'idUser', 'estado')
+
+    def get_imagen_url(self, obj):
+        request = self.context.get('request')
+        if obj.ImagenGrupo:
+            url = obj.ImagenGrupo.url
+            if request:
+                return request.build_absolute_uri(url)
+            return url
+        return None
+    def get_miembros_count(self, obj):
+        return UsuarioGrupo.objects.filter(idGrupo=obj).count()
+
+    def get_estado(self, obj):
+        request = self.context.get('request', None)
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            from .models import UsuarioGrupo
+            rel = UsuarioGrupo.objects.filter(idGrupo=obj, idUser=request.user).first()
+            if rel:
+                return rel.estado  # "aceptado" o "pendiente"
+        return None
+
+class UsuarioGrupoSerializer(serializers.ModelSerializer):
+    user_nombre = serializers.CharField(source='idUser.UserName', read_only=True)
+    grupo_nombre = serializers.CharField(source='idGrupo.NomGrupo', read_only=True)
+    class Meta:
+        model = UsuarioGrupo
+        fields = ['idUsuarioGrupo', 'IngresoGrupo', 'Rol', 'estado', 'idGrupo', 'grupo_nombre', 'idUser', 'user_nombre']
+        read_only_fields = ('idUsuarioGrupo', 'IngresoGrupo', 'grupo_nombre', 'user_nombre')
+
+class EventoSerializer(serializers.ModelSerializer):
+    creador_nombre = serializers.CharField(source='creador.UserName', read_only=True)
+    asistentes_count = serializers.SerializerMethodField(read_only=True)
+    class Meta:
+        model = Evento
+        fields = [
+            'idEvento', 'TituloEvent', 'DescEvent', 'FechEvent', 'Duracion', 'LugarEvent','Modalidad', 'Estado', 'creador', 'creador_nombre', 'asistentes_count', 'FechCreado'
+        ]
+        read_only_fields = ('idEvento', 'creador','creador_nombre','asistentes_count','FechCreado')
+
+    def get_asistentes_count(self, obj):
+        return UsuarioEvento.objects.filter(idEvento=obj).count()  # total inscripciones para evento
+
+class UsuarioEventoSerializer(serializers.ModelSerializer):
+    user_nombre = serializers.CharField(source='idUser.UserName', read_only=True)
+    evento_titulo = serializers.CharField(source='idEvento.TituloEvent', read_only=True)
+    class Meta:
+        model = UsuarioEvento
+        fields = ['idUsuarioEvento', 'idUser', 'user_nombre', 'idEvento', 'evento_titulo', 'tipo', 'FechRegistro']
+        read_only_fields = ('idUsuarioEvento','user_nombre','evento_titulo','FechRegistro')
+
+class AlertaIASerializer(serializers.Serializer):
+    tipo = serializers.CharField()
+    id = serializers.IntegerField()
+    usuario = serializers.CharField()
+    texto = serializers.CharField()
+    score = serializers.FloatField()
+    label = serializers.CharField()
+    fecha = serializers.DateTimeField()
+    extra = serializers.JSONField(required=False)
+
+class RecursoApoyoSerializer(serializers.ModelSerializer):
+    autor_nombre = serializers.CharField(source='autor.UserName', read_only=True)
+    class Meta:
+        model = RecursoApoyo
+        fields = [
+            'idRecurso', 'tipo', 'titulo', 'descripcion',
+            'archivo', 'url', 'categoria', 'etiqueta', 'fecha_publicacion', 'autor', 'autor_nombre',
+            'contador_vistas', 'contador_descargas'
+        ]
+        read_only_fields = ('idRecurso', 'fecha_publicacion', 'contador_vistas', 'contador_descargas', 'autor_nombre')
