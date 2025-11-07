@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
     // Función de LOGIN (Actualiza el estado con datos reales de Django)
     const login = (userData) => {
         setUser({
+            idUser: userData.idUser, // <- AGREGADO
             username: userData.UserName || 'Usuario',
             userType: userData.TipoUser || 'Estudiante',
             isSuperuser: userData.is_superuser || false,
@@ -55,6 +56,7 @@ export const AuthProvider = ({ children }) => {
                     const userData = await response.json();
                     // Si Django dice 200 OK, la sesión es válida. Guardamos los datos.
                     setUser({
+                        idUser: userData.idUser, // <- AGREGADO
                         username: userData.UserName,
                         userType: userData.TipoUser,
                         isSuperuser: userData.is_superuser,
