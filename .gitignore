@@ -44,3 +44,6 @@ README.old.md
 # Otros
 FRM_*.pdf
 TESINA*.pdf
+
+# Backups de datos
+backup*.json
