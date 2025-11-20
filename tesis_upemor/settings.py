@@ -11,8 +11,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
-
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -171,7 +173,13 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'rimanolpaulin@gmail.com'   # <-- Cambia por tu cuenta real
-EMAIL_HOST_PASSWORD = 'ovqc dsxp gqhc ufzy'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = 'UpeApp <no-reply@upeapp.com>'
 FRONTEND_URL = 'http://localhost:3000'
+
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+HUGGINGFACE_API_KEY = os.getenv('HUGGINGFACE_API_KEY')
+HUGGINGFACE_CHAT_MODEL = 'HuggingFaceH4/zephyr-7b-beta'
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+OPENAI_CHAT_MODEL = "gpt-3.5-turbo"
