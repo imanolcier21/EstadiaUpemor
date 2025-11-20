@@ -874,6 +874,39 @@ def consulta_huggingface(prompt, history, api_key, model):
         print('[HF EXCEP]:', e)
         return 'No fue posible responder (error de conexión).'
 
+def consulta_openai(prompt, history, api_key, model="gpt-3.5-turbo"):
+    import requests
+    url = "https://api.openai.com/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    # Formatea la historia según el API de OpenAI
+    chat_history = []
+    for m in (history or []):
+        # history: [{'rol': 'user'/'bot', 'text': ...}]
+        role = "assistant" if m.get("rol", "") == "bot" else "user"
+        chat_history.append({"role": role, "content": m.get("text", "")})
+    chat_history.append({"role": "user", "content": prompt})
+    data = {
+        "model": model,
+        "messages": chat_history,
+        "max_tokens": 250,
+        "temperature": 0.8
+    }
+    try:
+        r = requests.post(url, headers=headers, json=data, timeout=15)
+        if r.status_code == 200:
+            result = r.json()
+            respuesta = result['choices'][0]['message']['content']
+            return respuesta.strip()
+        else:
+            print("[OpenAI ERROR]", r.status_code, r.text)
+            return "No fue posible responder (OpenAI error)."
+    except Exception as e:
+        print("[OpenAI EXCEP]:", e)
+        return "No fue posible responder (error de conexión)."
+
 class ChatbotAPIView(APIView):
     authentication_classes = [CsrfExemptSessionAuthentication]
     permission_classes = []
@@ -882,43 +915,32 @@ class ChatbotAPIView(APIView):
         mensaje = request.data.get('mensaje', '')
         history = request.data.get('history', [])
         from django.conf import settings
-        api_key = getattr(settings, 'HUGGINGFACE_API_KEY', None)
-        model = getattr(settings, 'HUGGINGFACE_CHAT_MODEL', 'HuggingFaceH4/zephyr-7b-beta')
+        api_key = getattr(settings, 'OPENAI_API_KEY', None)
+        model = getattr(settings, 'OPENAI_CHAT_MODEL', 'gpt-3.5-turbo')
         if not api_key:
-            return Response({'error': 'HuggingFace API Key no configurada en settings.'}, status=500)
+            return Response({'error': 'OpenAI API Key no configurada en settings.'}, status=500)
         if not mensaje.strip():
             return Response({'error': 'Mensaje vacío.'}, status=400)
-        system_prompt = "Eres un chatbot de apoyo emocional para estudiantes universitarios. Ayuda, orienta y responde con empatía. Si detectas tristeza o crisis, brinda orientación básica."
-        prompt = system_prompt + "\nEstudiante: " + mensaje
-        respuesta_ia = consulta_huggingface(prompt, history, api_key, model)
-        # El resto igual que antes (puedes añadir análisis IA, logs y notas a la BD)
-        return Response({'respuesta': respuesta_ia})
-
-def consulta_openai(mensaje, history, api_key):
-    url = "https://api.openai.com/v1/chat/completions"
-    messages = [{"role": "system", "content": "Eres un chatbot de apoyo emocional para estudiantes universitarios. Ayuda, orienta y responde con empatía. Detecta emociones y sugiere recursos básicos si recibes mensajes de tristeza/crisis. No reemplazas atención psicológica profesional."}]
-    for turno in history:
-        if "role" in turno and "content" in turno:
-            messages.append({"role": turno["role"], "content": turno["content"]})
-        else:
-            messages.append({"role": "user", "content": str(turno)})
-    messages.append({"role": "user", "content": mensaje})
-    data = {
-        "model": "gpt-3.5-turbo",  # Cambia a gpt-4 si tienes acceso
-        "messages": messages,
-        "max_tokens": 512,
-        "temperature": 0.7,
-    }
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-    r = requests.post(url, json=data, headers=headers, timeout=15)
-    if r.status_code == 200:
-        respuesta = r.json()["choices"][0]["message"]["content"].strip()
-        return respuesta
-    else:
-        return f"[Error OpenAI]: {r.text}"
+        system_prompt = ("Eres un chatbot de apoyo emocional para estudiantes universitarios. "
+                         "Ayuda, orienta y responde con empatía. Si detectas tristeza o crisis brinda orientación básica. No reemplazas atención psicológica profesional.")
+        respuesta_ia = consulta_openai(system_prompt + "\nEstudiante: " + mensaje, history, api_key, model)
+        # --- Análisis de la emoción del mensaje recibido y posible alerta IA ---
+        from .views import analiza_texto_con_openai
+        score, label, suicidio = analiza_texto_con_openai(mensaje, api_key, model)
+        alerta = bool(suicidio or (label in ["depresion", "suicidio"] and score < 0))
+        # --- Guardar en base de datos la interacción si hay usuario autenticado ---
+        if user is not None and user.is_authenticated:
+            from .models import Chatbot
+            Chatbot.objects.create(
+                idUser=user,
+                UserQuery=mensaje,
+                Response=respuesta_ia,
+                Topic=None,
+                SentimientoScore=score,
+                SentimientoLabel=label,
+                AlertaIAChat=alerta
+            )
+        return Response({'respuesta': respuesta_ia, 'score': score, 'label': label, 'alerta': alerta})
 
 import requests
 
@@ -1509,3 +1531,51 @@ def backup_import(request):
         return JsonResponse({'ok':True, 'msg':'Restauración completada.'})
     else:
         return JsonResponse({'ok':False, 'error':completed.stderr.decode() or 'Fallo ejecutando loaddata.'}, status=500)
+
+def analiza_texto_con_openai(texto, api_key, model="gpt-3.5-turbo"):
+    import requests, json
+    prompt = (
+        "Responde SOLO con 1 línea de JSON, sin explicaciones, con estos campos: label (etiqueta emocional: depresion, ansiedad, suicidio, neutro, etc.), score (número entre -1 y 1; negativo es más grave), y suicidio (true/false: solo true si detectas pensamiento suicida explícito). "
+        "Ejemplo: {\"label\":\"ansiedad\",\"score\":-0.60,\"suicidio\":false}. "
+        "Texto: " + texto
+    )
+    url = "https://api.openai.com/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": "Eres un experto en psicología emocional."},
+            {"role": "user", "content": prompt}
+        ],
+        "max_tokens": 70,
+        "temperature": 0.1
+    }
+    try:
+        r = requests.post(url, headers=headers, json=data, timeout=20)
+        if r.status_code == 200:
+            result = r.json()
+            texto_respuesta = result['choices'][0]['message']['content']
+            # Busca el primer JSON dentro del texto
+            import re
+            matches = re.findall(r'\{.*?\}', texto_respuesta.replace('\n',' ').replace('\r',' '))
+            for m in matches:
+                try:
+                    res = json.loads(m)
+                    label = res.get('label','')
+                    score = float(res.get('score',0))
+                    suicidio = res.get('suicidio',False)
+                    return score, label, bool(suicidio)
+                except Exception:
+                    continue
+            print('[OpenAI SENTIMENT] NO PARSEABLE:', texto_respuesta)
+        else:
+            print('[OpenAI SENTIMENT ERROR]', r.status_code, r.text)
+        return 0.0, 'desconocido', False
+    except Exception as e:
+        print('[OpenAI SENTIMENT EXCEP]', e)
+        return 0.0, 'error', False
+
+# Luego en cualquier parte donde se usaba analiza_texto_con_gemini o huggingface, ahora usa analiza_texto_con_openai(contenido, api_key, model) para análisis igual en posts, comentarios, mensajes directos y el chat.
