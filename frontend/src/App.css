@@ -1,44 +1,260 @@
-.App {
+/* --- UTILITIES --- */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.card {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-color);
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.text-center {
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.text-right {
+  text-align: right;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.text-sm {
+  font-size: var(--font-size-sm);
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+.text-muted {
+  color: var(--text-light);
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+/* --- BUTTONS --- */
+.primary-button,
+.btn-primary {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
+  background-color: var(--primary-600);
   color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  border: none;
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  transition: background-color 0.2s, transform 0.1s;
 }
 
-.App-link {
-  color: #61dafb;
+.primary-button:hover,
+.btn-primary:hover {
+  background-color: var(--primary-700);
+  text-decoration: none;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+.primary-button:active,
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.secondary-button,
+.btn-secondary {
+  background-color: white;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.secondary-button:hover,
+.btn-secondary:hover {
+  background-color: var(--bg-body);
+  text-decoration: none;
+  color: var(--text-main);
+}
+
+.danger-button,
+.btn-danger {
+  background-color: var(--danger-500);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  border: none;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.danger-button:hover,
+.btn-danger:hover {
+  background-color: var(--danger-600);
+}
+
+/* --- FORMS --- */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-family: inherit;
+  background-color: var(--bg-surface);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  margin-bottom: 1rem;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--secondary-500);
+  box-shadow: 0 0 0 3px var(--primary-100);
+  /* Keep light green glow or change to mint tint? Let's keep light green for now or use secondary-100 if it existed. */
+}
+
+/* ... existing label ... */
+
+/* --- BUTTONS (Extra) --- */
+.btn-accent {
+  background-color: var(--secondary-500);
+  color: var(--primary-700);
+  /* Dark text for contrast on mint */
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  border: none;
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  transition: background-color 0.2s, transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn-accent:hover {
+  background-color: var(--secondary-600);
+  color: var(--primary-700);
+  text-decoration: none;
+}
+
+.btn-accent:active {
+  transform: scale(0.98);
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* --- ALERTS --- */
+.alert-box {
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.alert-box.error {
+  background-color: #fef2f2;
+  color: var(--danger-600);
+  border: 1px solid #fecaca;
+}
+
+.alert-box.success {
+  background-color: #ecfdf5;
+  color: var(--secondary-600);
+  border: 1px solid #a7f3d0;
+}
+
+/* --- LOADING --- */
+.loading-message {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* --- RESPONSIVE GRID --- */
+.grid-responsive {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .grid-responsive {
+    grid-template-columns: repeat(2, 1fr);
   }
-  to {
-    transform: rotate(360deg);
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive {
+    grid-template-columns: repeat(3, 1fr);
   }
+}
+
+/* --- FEED LAYOUT --- */
+.feed-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1rem;
+  width: 100%;
+}
+
+.my-4 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  border: 0;
+  border-top: 1px solid var(--border-color);
 }

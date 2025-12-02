@@ -9,8 +9,8 @@ from .models import Evento, UsuarioEvento
 from .models import RecursoApoyo
 
 class UsuarioSerializer(serializers.ModelSerializer):
-    # Campo personalizado para la relación de Carrera (mostrar el nombre, no el ID)
-    idCarrera = serializers.CharField(source='idCarrera.NomCarrera', required=False, allow_null=True)
+    # Campo para mostrar el nombre de la carrera (solo lectura)
+    carrera_nombre = serializers.CharField(source='idCarrera.NomCarrera', read_only=True)
     foto_perfil_url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -18,11 +18,11 @@ class UsuarioSerializer(serializers.ModelSerializer):
         # Incluimos los campos esenciales para mostrar y gestionar
         fields = [
             'idUser', 'NomUser', 'ApePatUser', 'ApeMatUser', 'UserName', 'CorreoUser', 'genero',
-            'TipoUser', 'is_active', 'FechUnido', 'idCarrera', 'descripcion', 'foto_perfil_url', 'is_profile_public',
+            'TipoUser', 'is_active', 'FechUnido', 'idCarrera', 'carrera_nombre', 'descripcion', 'foto_perfil', 'foto_perfil_url', 'is_profile_public',
             'show_posts_public', 'mostrar_contacto', 'info_contacto'
         ]
         # La contraseña NUNCA debe ser expuesta en el serializador de lectura/listado
-        read_only_fields = ('FechUnido', 'foto_perfil_url')
+        read_only_fields = ('FechUnido', 'foto_perfil_url', 'carrera_nombre')
 
     def get_foto_perfil_url(self, obj):
         request = self.context.get('request')
@@ -32,20 +32,6 @@ class UsuarioSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(url)
             return url
         return None
-
-    def update(self, instance, validated_data):
-        # Maneja explícitamente la asignación de carrera si viene el ID en el request
-        idCarrera_id = self.initial_data.get('idCarrera')
-        if idCarrera_id:
-            from .models import Carrera
-            try:
-                carrera = Carrera.objects.get(idCarrera=idCarrera_id)
-                instance.idCarrera = carrera
-            except Carrera.DoesNotExist:
-                pass # O puedes lanzar un error ValidationError
-        # Elimina nested writes automáticos
-        validated_data.pop('idCarrera', None)
-        return super().update(instance, validated_data)
 
 # ---- UsuarioExplorarSerializer para búsquedas rápidas ----
 class UsuarioExplorarSerializer(serializers.ModelSerializer):

@@ -109,8 +109,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'estadia',        # Nombre de la base de datos que acabas de crear
-        'USER': 'imanolcier',    # Por defecto, 'tu_nombre_de_usuario_mac'
-        'PASSWORD': '',                   # Deja esto en blanco o con tu contraseña
+        'USER': 'postgres',    # Por defecto, 'tu_nombre_de_usuario_mac'
+        'PASSWORD': 'laslocas123',                   # Deja esto en blanco o con tu contraseña
         'HOST': 'localhost',
         'PORT': '5432',                   # Puerto por defecto de PostgreSQL
     }
@@ -165,7 +165,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Custom user model
 AUTH_USER_MODEL = 'core.Usuario'
 
-MEDIA_URL = 'post_media/'
+MEDIA_URL = '/post_media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'post_media')
 
 

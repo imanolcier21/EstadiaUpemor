@@ -1,0 +1,123 @@
+/* frontend/src/components/auth/AuthPage.css */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%;
+    background-color: var(--bg-body);
+    padding: 1rem;
+}
+
+.auth-box {
+    background-color: var(--bg-surface);
+    padding: 2.5rem;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+    width: 100%;
+    max-width: 420px;
+    border: 1px solid var(--border-color);
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auth-box .logo {
+    max-width: 120px;
+    margin-bottom: 1.5rem;
+    border-radius: var(--radius-md);
+}
+
+.auth-box h1 {
+    font-size: var(--font-size-2xl);
+    color: var(--primary-700);
+    margin-bottom: 0.5rem;
+}
+
+.auth-box p {
+    font-size: var(--font-size-base);
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.form-group {
+    text-align: left;
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    font-size: var(--font-size-sm);
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+    display: block;
+    font-weight: 600;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-base);
+    transition: all 0.2s;
+    background-color: #f9fafb;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    background-color: white;
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px var(--primary-100);
+    outline: none;
+}
+
+.primary-button {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.875rem;
+    font-size: var(--font-size-base);
+}
+
+.forgot-password {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.forgot-password a {
+    font-size: var(--font-size-sm);
+    color: var(--primary-600);
+}
+
+.toggle-auth {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    margin-top: 1rem;
+    text-decoration: underline;
+    transition: color 0.2s;
+}
+
+.toggle-auth:hover {
+    color: var(--primary-600);
+}
+
+/* Alert Box overrides if needed, but global styles should handle it */
+.alert-box {
+    margin-bottom: 1.5rem;
+    text-align: left;
+    font-size: var(--font-size-sm);
+}

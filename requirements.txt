@@ -1,8 +1,11 @@
 asgiref==3.9.1
-Django==5.2.6
-mysqlclient==2.2.7
+Django==4.2.11
+
 psycopg2-binary==2.9.10
 sqlparse==0.5.3
 django-cors-headers==4.9.0
-python-dotenv
+djangorestframework==3.14.0
+requests==2.32.3
+python-dotenv==1.0.0
+pillow==10.1.0
 

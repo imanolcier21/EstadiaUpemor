@@ -1,0 +1,300 @@
+/* frontend/src/components/layout/NavBar.css */
+.navbar {
+    background-color: var(--primary-500);
+    color: white;
+    box-shadow: var(--shadow-md);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    height: var(--header-height);
+}
+
+.navbar-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -0.5px;
+}
+
+/* Links Container */
+.navbar-links {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-md);
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: white;
+    text-decoration: none;
+}
+
+.warning-link {
+    color: #fca5a5 !important;
+}
+
+.info-link {
+    color: #93c5fd !important;
+}
+
+/* User Info Desktop */
+.navbar-user-info-desktop {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.user-greeting {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.logout-button {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.logout-button:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Mobile Menu Button */
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+}
+
+.mobile-user-info {
+    display: none;
+}
+
+/* Notifications */
+.notifications-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.bell-icon {
+    cursor: pointer;
+    font-size: 1.25rem;
+    position: relative;
+    padding: 0.25rem;
+    transition: transform 0.2s;
+}
+
+.bell-icon:hover {
+    transform: scale(1.1);
+}
+
+.badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background-color: var(--danger-500);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    border: 2px solid var(--primary-600);
+}
+
+.notifications-dropdown {
+    position: absolute;
+    top: 100%;
+    right: -80px;
+    /* Adjust for mobile/desktop */
+    margin-top: 1rem;
+    background: white;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    width: 320px;
+    color: var(--text-main);
+    overflow: hidden;
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-header {
+    padding: 0.75rem 1rem;
+    background-color: var(--bg-body);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+
+.dropdown-content {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notifications-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 90;
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 1024px) {
+    .navbar-links {
+        gap: 0.25rem;
+    }
+
+    .nav-link {
+        font-size: 0.85rem;
+        padding: 0.4rem 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-btn {
+        display: block;
+    }
+
+    .navbar-user-info-desktop {
+        display: none;
+    }
+
+    /* Hide desktop user info */
+
+    .navbar-links {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        right: 0;
+        background-color: var(--primary-600);
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1rem;
+        gap: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transform: translateY(-150%);
+        transition: transform 0.3s ease-in-out;
+        z-index: 999;
+    }
+
+    .navbar-links.active {
+        transform: translateY(0);
+    }
+
+    .nav-link {
+        text-align: center;
+        padding: 0.75rem;
+        border-radius: var(--radius-md);
+        width: 100%;
+        display: block;
+    }
+
+    .mobile-user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .logout-button-mobile {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        width: 100%;
+        font-weight: 600;
+    }
+
+    /* Adjust notifications for mobile */
+    .notifications-dropdown {
+        position: fixed;
+        top: var(--header-height);
+        left: 1rem;
+        right: 1rem;
+        width: auto;
+        margin-top: 0.5rem;
+    }
+
+    /* Show bell in header on mobile */
+    .navbar-user-info-desktop {
+        display: flex !important;
+        /* Force show only bell? No, logic is split */
+    }
+
+    /* Actually we need the bell visible on mobile header. 
+       Let's adjust the structure in JS to keep bell outside the collapsed menu 
+       or duplicate it. For now, let's keep it simple: 
+       We hid .navbar-user-info-desktop. 
+       Let's show a separate bell or keep it visible.
+    */
+    .navbar-user-info-desktop {
+        display: flex;
+        /* Keep it visible for bell */
+    }
+
+    .navbar-user-info-desktop .user-greeting,
+    .navbar-user-info-desktop .logout-button {
+        display: none;
+        /* Hide text/logout, keep bell */
+    }
+}
